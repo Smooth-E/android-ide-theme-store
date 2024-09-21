@@ -4,9 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,20 +20,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.tokens.PrimaryNavigationTabTokens
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,15 +45,24 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainActivityView() {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TabbedToolbar(selectedTabIndex) },
+        topBar = { TabbedToolbar(pagerState) },
         content = { innerPadding ->
-            Text("Hello Android!")
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = false
+            ) { pageIndex ->
+                when (pageIndex) {
+                    0 -> PageContent("Something 1")
+                    1 -> PageContent("Something 2")
+                }
+            }
         }
     )
 }
@@ -65,8 +76,10 @@ fun MainActivityPreview() {
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun TabbedToolbar(selectedTabIndex: Int) {
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+fun TabbedToolbar(pagerState: PagerState) {
+    val coroutineScope = rememberCoroutineScope()
+
     val tabNames = listOf(
         stringResource(R.string.source_jetbrains),
         stringResource(R.string.source_vscode)
@@ -94,15 +107,30 @@ fun TabbedToolbar(selectedTabIndex: Int) {
             }
         )
 
-        TabRow(selectedTabIndex) {
+        TabRow(pagerState.currentPage) {
             tabNames.forEachIndexed { index, title ->
                 LeadingIconTab(
-                    selectedTabIndex == index,
+                    pagerState.currentPage == index,
                     text = { Text(title) },
                     icon = { Icon(tabIcons[index], null, Modifier.size(24.dp)) },
-                    onClick = { println("Switch to fragment $index") }
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    }
                 )
             }
         }
+    }
+}
+
+@Composable
+fun PageContent(text: String) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text)
     }
 }
