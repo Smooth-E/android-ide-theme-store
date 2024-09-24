@@ -2,7 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("com.google.dagger.hilt.android")
     kotlin("kapt")
+//    kotlin("jvm")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -61,6 +64,11 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.hilt.android)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.coroutines)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
     kapt(libs.hilt.android.compiler)
 
     testImplementation(libs.junit)
