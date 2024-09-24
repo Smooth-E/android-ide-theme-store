@@ -79,7 +79,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                     async { loadBitmap(baseUrl + it.icon) }
                 }
                 val deferredPreviews = data.plugins.map {
-                    async { loadBitmap(baseUrl + it.previewImage) }
+                    async { loadBitmap(/* baseUrl + it.previewImage*/ "https://picsum.photos/250?image=9") }
                 }
 
                 val icons = deferredIcons.awaitAll()

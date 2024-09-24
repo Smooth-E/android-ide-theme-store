@@ -25,6 +25,7 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat.ThemeCompat
+import coil.compose.AsyncImage
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.data.JetbrainsStorefrontResponse
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
@@ -55,8 +56,14 @@ fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Image(
-                    bitmap = preview ?: ImageBitmap.imageResource(R.drawable.mock_theme_preview),
+//                Image(
+//                    bitmap = preview ?: ImageBitmap.imageResource(R.drawable.mock_theme_preview),
+//                    contentDescription = null,
+//                    modifier = Modifier.height(maxWidth * 9f / 16f).fillMaxWidth(),
+//                    contentScale = ContentScale.Crop
+//                )
+                AsyncImage(
+                    model = "https://downloads.marketplace.jetbrains.com" + state.data.previewImage,
                     contentDescription = null,
                     modifier = Modifier.height(maxWidth * 9f / 16f).fillMaxWidth(),
                     contentScale = ContentScale.Crop
