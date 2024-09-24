@@ -82,15 +82,18 @@ class JetbrainsStoreViewModel @Inject constructor(
                     async { loadBitmap(baseUrl + it.previewImage) }
                 }
 
-                deferredIcons.awaitAll()
-                deferredPreviews.awaitAll()
+                val icons = deferredIcons.awaitAll()
+                val previews = deferredPreviews.awaitAll()
 
                 _items.update { list ->
                     list + data.plugins.mapIndexed { index, plugin ->
+                        val preview = previews[index]
+                        Log.d(tag, "Preview for index $index is null? ${preview == null} ${preview?.asImageBitmap() == null}")
                         JetbrainsThemeCardState(
                             plugin,
-                            deferredIcons[index].getCompleted(),
-                            deferredPreviews[index].getCompleted()                        )
+                            icons[index],
+                            previews[index]
+                        )
                     }
                 }
 
@@ -118,19 +121,18 @@ class JetbrainsStoreViewModel @Inject constructor(
         httpClient.newCall(request).executeAsync().use { response ->
             if (!response.isSuccessful) {
                 Log.d(tag, "Failed to load bitmap: $url")
-                return@use
+                return null
             }
 
             try {
                 val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
+                Log.d(tag, "Returning the bitmap for url $url")
                 return bitmap
             } catch (exception: Exception) {
                 Log.d(tag, "Failed to decode bitmap from stream.")
                 Log.d(tag, exception.stackTrace.toString())
-                return@use
+                return null
             }
         }
-
-        return null
     }
 }

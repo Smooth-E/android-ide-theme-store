@@ -1,6 +1,7 @@
 package moe.smoothie.androidide.themestore.ui
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -32,10 +33,21 @@ data class JetbrainsThemeCardState(
     val data: JetbrainsStorefrontResponse.Plugin,
     var previewBitmap: Bitmap? = null,
     var iconBitmap: Bitmap? = null
-)
+) {
+    private val tag = "JetbrainsThemeCardState"
+
+    init {
+        Log.d(tag, "Created card state with ${previewBitmap == null} and ${iconBitmap == null}")
+    }
+}
 
 @Composable
 fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
+    var preview: ImageBitmap? = null
+    if (state.previewBitmap != null) {
+        preview = state.iconBitmap?.asImageBitmap()
+    }
+
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -44,17 +56,18 @@ fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Image(
-                    bitmap = state.previewBitmap?.asImageBitmap()
-                        ?: ImageBitmap.imageResource(R.drawable.mock_theme_preview),
+                    bitmap = preview ?: ImageBitmap.imageResource(R.drawable.mock_theme_preview),
                     contentDescription = null,
                     modifier = Modifier.height(maxWidth * 9f / 16f).fillMaxWidth(),
                     contentScale = ContentScale.Crop
                 )
             }
-            Text(
-                text = state.data.name,
-                style = MaterialTheme.typography.titleSmall
-            )
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = (state.previewBitmap == null).toString(),
+                    style = MaterialTheme.typography.titleSmall
+                )
+            }
         }
     }
 }
