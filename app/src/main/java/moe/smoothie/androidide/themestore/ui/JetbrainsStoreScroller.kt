@@ -37,7 +37,7 @@ fun JetbrainsStoreScroller(pageViewModel: JetbrainsStoreViewModel = viewModel())
     Log.d(tag, "Composing the scroller with ${cards.size} items")
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 160.dp),
+        columns = GridCells.Adaptive(minSize = 300.dp),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -56,7 +56,7 @@ fun JetbrainsStoreScroller(pageViewModel: JetbrainsStoreViewModel = viewModel())
 
         item {
             SideEffect {
-                if (cards.size == 0) {
+                if (cards.isEmpty()) {
                     pageViewModel.loadItems(itemsPerPage)
                 }
             }
