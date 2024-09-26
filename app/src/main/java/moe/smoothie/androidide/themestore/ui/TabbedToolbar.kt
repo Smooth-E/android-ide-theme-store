@@ -38,7 +38,7 @@ fun TabbedToolbar(tabNames: List<String>, tabIcons: List<Painter>, pagerState: P
                 ) {
                     Icon(
                         Icons.Rounded.Settings,
-                        stringResource(R.string.content_description_settings)
+                        stringResource(R.string.destination_settings)
                     )
                 }
             }

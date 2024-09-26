@@ -1,11 +1,9 @@
 package moe.smoothie.androidide.themestore.ui
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,14 +17,16 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import moe.smoothie.androidide.themestore.viewmodels.JetbrainsStoreViewModel
 
 @Composable
-fun JetbrainsStoreScroller(pageViewModel: JetbrainsStoreViewModel = viewModel()) {
+fun JetbrainsStoreScroller(
+    navBackStackEntry: NavBackStackEntry,
+    pageViewModel: JetbrainsStoreViewModel = hiltViewModel(navBackStackEntry)
+) {
     val tag = "JetbrainsStoreScroller"
     val itemsPerPage = 20
 
@@ -65,16 +65,19 @@ fun JetbrainsStoreScroller(pageViewModel: JetbrainsStoreViewModel = viewModel())
         item {
             if (!allItemsLoaded) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.height(20.dp).width(20.dp)
+                        modifier = Modifier
+                            .height(20.dp)
+                            .width(20.dp)
 
                     )
                     Text("Someting", modifier = Modifier.fillMaxWidth())
                 }
-            }
-            else {
+            } else {
                 Text(text = "All items loaded", modifier = Modifier.fillMaxWidth())
             }
         }
