@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import moe.smoothie.androidide.themestore.ui.JetbrainsStoreScroller
+import moe.smoothie.androidide.themestore.ui.NavigationBarRoute
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 import okhttp3.OkHttpClient
 import javax.inject.Inject
@@ -52,25 +51,19 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-data class TopLevelRoute(
-    @StringRes val nameResource: Int,
-    @DrawableRes val iconResource: Int,
-    val route: String
-)
-
 @Composable
 fun MainActivityView() {
-    val routeJetbrainsMarketplace = TopLevelRoute(
+    val routeJetbrainsMarketplace = NavigationBarRoute(
         R.string.source_jetbrains,
         R.drawable.icons8_jetbrains,
         "jetbrains-marketplace"
     )
-    val routeVSCodeMarketplace = TopLevelRoute(
+    val routeVSCodeMarketplace = NavigationBarRoute(
         R.string.source_vscode,
         R.drawable.icons8_visual_studio,
         "vscode-marketplace"
     )
-    val routeSettings = TopLevelRoute(
+    val routeSettings = NavigationBarRoute(
         R.string.destination_settings,
         R.drawable.baseline_settings_24,
         "settings"
@@ -118,7 +111,7 @@ fun PageContent(text: String) {
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavController, routes: List<TopLevelRoute>) {
+fun BottomNavigationBar(navController: NavController, routes: List<NavigationBarRoute>) {
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination

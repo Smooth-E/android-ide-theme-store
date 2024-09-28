@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
@@ -62,21 +63,22 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
             ) {
                 Text(
                     text = state.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = spacing * 0),
+                        .padding(top = spacing / 2),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row {
-
+                    Row(modifier = Modifier.align(Alignment.CenterVertically)) {
                         for (i in 0..5) {
                             Icon(
                                 painter = if (state.rating >= i) filledStar else outlinedStar,
                                 contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -85,7 +87,7 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_download_24),
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(16.dp).align(Alignment.CenterVertically),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
@@ -93,8 +95,8 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
-                                .height(24.dp)
                                 .wrapContentHeight(Alignment.CenterVertically)
+                                .align(Alignment.CenterVertically)
                                 .padding(start = spacing / 2)
                         )
                     }
@@ -103,7 +105,7 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
                     text = state.preview,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = spacing),
+                        .padding(top = spacing / 2),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -114,16 +116,15 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
 
 @Preview
 @Composable
-fun JetbrainsThemeCardPreview() {
+fun JetbrainsThemeCardPreview(themeName: String = "One Dark Pro Theme") {
     AndroidIDEThemesTheme {
         Box(modifier = Modifier.width(300.dp)) {
             JetbrainsThemeCard(
-
                 JetbrainsStorefrontResponse.Plugin(
                     id = 11938,
                     xmlId = "com.markskelton.one-dark-theme",
                     link = "/plugin/11938-one-dark-theme",
-                    name = "One Dark Theme",
+                    name = themeName,
                     preview = "One Dark theme for JetBrains. Do you need help? Please check the docs FAQs to see if we can solve your problem. If that does not fix your problem, please submit an...",
                     downloads = 7971894,
                     pricingModel = "FREE",
@@ -142,3 +143,8 @@ fun JetbrainsThemeCardPreview() {
         }
     }
 }
+
+@Preview
+@Composable
+fun LongThemeNamePreview() =
+    JetbrainsThemeCardPreview("A very very very long name of a theme, yeah")
