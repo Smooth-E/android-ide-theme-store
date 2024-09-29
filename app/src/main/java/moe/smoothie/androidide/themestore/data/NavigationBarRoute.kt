@@ -1,4 +1,4 @@
-package moe.smoothie.androidide.themestore.ui
+package moe.smoothie.androidide.themestore.data
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

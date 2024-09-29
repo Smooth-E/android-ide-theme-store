@@ -25,14 +25,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import moe.smoothie.androidide.themestore.R
-import moe.smoothie.androidide.themestore.data.JetbrainsStorefrontResponse
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 import moe.smoothie.androidide.themestore.util.formatNumber
 
+data class JetbrainsThemeCardState(
+    val previewUrl: String,
+    val name: String,
+    val rating: Float,
+    val downloads: Long,
+    val trimmedDescription: String
+)
+
 @Composable
-fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
+fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
     val spacing = 8.dp
-    val downloadUrl = "https://downloads.marketplace.jetbrains.com"
     val outlinedStar = painterResource(R.drawable.outline_grade_24)
     val filledStar = painterResource(R.drawable.baseline_grade_24)
 
@@ -45,7 +51,7 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 SubcomposeAsyncImage(
-                    model = downloadUrl + state.previewImage,
+                    model = state.previewUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .height(maxWidth * 480f / 768f)
@@ -102,7 +108,7 @@ fun JetbrainsThemeCard(state: JetbrainsStorefrontResponse.Plugin) {
                     }
                 }
                 Text(
-                    text = state.preview,
+                    text = state.trimmedDescription,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = spacing / 2),
@@ -120,25 +126,13 @@ fun JetbrainsThemeCardPreview(themeName: String = "One Dark Pro Theme") {
     AndroidIDEThemesTheme {
         Box(modifier = Modifier.width(300.dp)) {
             JetbrainsThemeCard(
-                JetbrainsStorefrontResponse.Plugin(
-                    id = 11938,
-                    xmlId = "com.markskelton.one-dark-theme",
-                    link = "/plugin/11938-one-dark-theme",
-                    name = themeName,
-                    preview = "One Dark theme for JetBrains. Do you need help? Please check the docs FAQs to see if we can solve your problem. If that does not fix your problem, please submit an...",
-                    downloads = 7971894,
-                    pricingModel = "FREE",
-                    icon = "/files/11938/605820/icon/pluginIcon.svg",
-                    previewImage = "/files/11938/preview_19494.png",
-                    cdate = 1726780936000,
-                    rating = 4.8f,
-                    hasSource = true,
-                    tags = listOf("Theme", "User Interface"),
-                    vendor = JetbrainsStorefrontResponse.Plugin.Vendor(
-                        name = "Mark Skelton",
-                        isVerified = false
-                    )
-                )
+                JetbrainsThemeCardState(
+                previewUrl = "https://example.com", // Images do not load in previews
+                name = themeName,
+                rating = 4.3f,
+                downloads = 1_234_567,
+                trimmedDescription = "One Dark theme for JetBrains. Do you need help? Please check the docs FAQs to see if we can solve your problem. If that does not fix your problem, please submit an..."
+            )
             )
         }
     }

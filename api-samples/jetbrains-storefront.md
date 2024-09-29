@@ -1,10 +1,12 @@
-# Request
+# Storefront
+
+## Request
 
 ```
 https://plugins.jetbrains.com/api/searchPlugins?excludeTags=internal&includeTags=theme&max=12&offset=0&tags=Theme
 ```
 
-# Response
+## Response
 
 ```json
 {
@@ -289,5 +291,151 @@ https://plugins.jetbrains.com/api/searchPlugins?excludeTags=internal&includeTags
   ],
   "total": 381,
   "correctedQuery": ""
+}
+```
+
+# Specific theme
+
+## Request
+
+```txt
+
+```
+
+## Response
+
+```json
+{
+    "id": 11938,
+    "name": "One Dark Theme",
+    "link": "/plugin/11938-one-dark-theme",
+    "approve": true,
+    "xmlId": "com.markskelton.one-dark-theme",
+    "description": "\n \n \n  <blockquote> \n   <p><a href=\"https://github.com/atom/one-dark-syntax\">One Dark</a> theme for JetBrains.</p> \n  </blockquote> \n  <p><br><img src=\"https://github.com/one-dark/jetbrains-one-dark-theme/raw/master/docs/screenshots/default.png\" alt=\"Code example\" width=\"700\"></p> \n  <h2>Do you need help?</h2> \n  <p>Please check <a href=\"https://one-dark.gitbook.io/jetbrains/help/faqs\">the docs FAQs</a> to see if we can solve your problem. If that does not fix your problem, please <a href=\"https://github.com/one-dark/jetbrains-one-dark-theme/issues/new\">submit an issue</a>.</p> \n  <h2>Setup</h2> \n  <p>After installing the theme, go to <code>Preferences | Appearance &amp; Behavior | Appearance</code> and select one of the new themes in the theme dropdown. Once you have selected one of the theme options, click the <strong>OK</strong> button to apply the changes so you can start enjoying One Dark Theme!</p> \n  <p><br><img src=\"https://github.com/one-dark/jetbrains-one-dark-theme/raw/master/docs/screenshots/configuration.png\" alt=\"Configuration example\" width=\"700\"></p> \n  <h2>Further Documentation</h2> \n  <p>Check out the <a href=\"https://one-dark.gitbook.io/jetbrains\">docs</a> for manual installation instructions, additional screenshots, and contributing guidelines.</p> \n  <ul> \n   <li><a href=\"https://one-dark.gitbook.io/jetbrains/the-basics/installation\">Installation</a></li> \n   <li><a href=\"https://one-dark.gitbook.io/jetbrains/the-basics/screenshots\">Screenshots</a></li> \n   <li><a href=\"https://one-dark.gitbook.io/jetbrains/contributing/development\">Contributing</a></li> \n  </ul>\n \n",
+    "customIdeList": false,
+    "preview": "One Dark theme for JetBrains. Do you need help? Please check the docs FAQs to see if we can solve your problem. If that does not fix your problem, please submit an...",
+    "email": "one-dark@mskelton.dev",
+    "cdate": 1726780936000,
+    "family": "intellij",
+    "copyright": "2024 Mark Skelton",
+    "downloads": 8046899,
+    "vendor": {
+        "type": "personal",
+        "id": 3815,
+        "name": "1a1c5548-64f1-4e80-89dc-d3227d13fffc",
+        "url": "https://mskelton.dev",
+        "link": "/vendor/1a1c5548-64f1-4e80-89dc-d3227d13fffc",
+        "publicName": "Mark Skelton",
+        "email": "info@mskelton.dev",
+        "countryCode": "US",
+        "country": "United States",
+        "isVerified": false,
+        "isTrader": false,
+        "description": "I’m Mark, a frontend software engineer who loves to build exceptional user experiences. My passion lies in developer experience, productivity, and accessibility. And yes, I use Vim."
+    },
+    "urls": {
+        "url": "",
+        "forumUrl": "",
+        "licenseUrl": "https://github.com/one-dark/jetbrains-one-dark-theme/blob/master/LICENSE",
+        "privacyPolicyUrl": "",
+        "bugtrackerUrl": "https://github.com/one-dark/jetbrains-one-dark-theme/issues",
+        "docUrl": "https://github.com/one-dark/jetbrains-one-dark-theme#readme",
+        "sourceCodeUrl": "https://github.com/one-dark/jetbrains-one-dark-theme",
+        "customContacts": [
+            {
+                "title": "Twitter",
+                "link": "https://twitter.com/mskelton0"
+            }
+        ]
+    },
+    "tags": [
+        {
+            "id": 164,
+            "name": "Theme",
+            "privileged": true,
+            "searchable": true,
+            "link": "/tag/164-theme"
+        },
+        {
+            "id": 13,
+            "name": "User Interface",
+            "privileged": false,
+            "searchable": true,
+            "link": "/tag/13-user-interface"
+        }
+    ],
+    "hasUnapprovedUpdate": false,
+    "pricingModel": "FREE",
+    "screens": [
+        {
+            "url": "/files/11938/screenshot_19494.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19493.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19453.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19454.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19455.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19456.png"
+        },
+        {
+            "url": "/files/11938/screenshot_19495.png"
+        }
+    ],
+    "themes": [
+        {
+            "name": "One Dark Italic",
+            "dark": true
+        },
+        {
+            "name": "One Dark",
+            "dark": true
+        },
+        {
+            "name": "One Dark Vivid Italic",
+            "dark": true
+        },
+        {
+            "name": "One Dark italic",
+            "dark": true
+        },
+        {
+            "name": "One Dark vivid italic",
+            "dark": true
+        },
+        {
+            "name": "One Dark Vivid",
+            "dark": true
+        },
+        {
+            "name": "One dark",
+            "dark": true
+        },
+        {
+            "name": "One dark italic",
+            "dark": true
+        },
+        {
+            "name": "One Dark vivid",
+            "dark": true
+        },
+        {
+            "name": "",
+            "dark": true
+        }
+    ],
+    "icon": "/files/11938/605820/icon/pluginIcon.svg",
+    "semverOnly": false,
+    "isHidden": false,
+    "isMonetizationAvailable": true,
+    "isBlocked": false,
+    "isModificationAllowed": false
 }
 ```

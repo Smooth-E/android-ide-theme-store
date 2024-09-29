@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.JetbrainsStorefrontResponse
+import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCardState
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.coroutines.executeAsync
@@ -21,10 +22,11 @@ import javax.inject.Inject
 class JetbrainsStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
 ) : ViewModel() {
-    private val tag = "JetbrainsStoreViewModel";
+    private val tag = "JetbrainsStoreViewModel"
+    private val basePreviewUrl = "https://downloads.marketplace.jetbrains.com"
 
-    private val _items = MutableStateFlow<List<JetbrainsStorefrontResponse.Plugin>>(emptyList())
-    val items: StateFlow<List<JetbrainsStorefrontResponse.Plugin>> = _items
+    private val _items = MutableStateFlow<List<JetbrainsThemeCardState>>(emptyList())
+    val items: StateFlow<List<JetbrainsThemeCardState>> = _items
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -68,15 +70,25 @@ class JetbrainsStoreViewModel @Inject constructor(
                         return@use
                     }
 
-                    _items.update { list -> list + data.plugins }
+                    _items.update { list ->
+                        list + data.plugins.map { plugin ->
+                            JetbrainsThemeCardState(
+                                previewUrl = basePreviewUrl + plugin.previewImage,
+                                name = plugin.name,
+                                rating = plugin.rating,
+                                downloads = plugin.downloads,
+                                trimmedDescription = plugin.preview
+                            )
+                        }
+                    }
 
                     if (data.total <= items.value.size) {
                         _allItemsLoaded.update { true }
                     }
                 }
-            }
-            catch (exception: Exception) {
-                Log.e(tag, "Exception loading ne items for ${getPageUrl(items.value.size, pageSize)}")
+            } catch (exception: Exception) {
+                val url = getPageUrl(items.value.size, pageSize)
+                Log.e(tag, "Exception loading ne items for $url")
                 exception.printStackTrace()
             }
 

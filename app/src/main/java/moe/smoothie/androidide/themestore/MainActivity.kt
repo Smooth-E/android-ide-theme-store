@@ -30,7 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import moe.smoothie.androidide.themestore.ui.JetbrainsStoreScroller
-import moe.smoothie.androidide.themestore.ui.NavigationBarRoute
+import moe.smoothie.androidide.themestore.data.NavigationBarRoute
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 import okhttp3.OkHttpClient
 import javax.inject.Inject
@@ -68,7 +68,11 @@ fun MainActivityView() {
         R.drawable.baseline_settings_24,
         "settings"
     )
-    val routes = listOf(routeJetbrainsMarketplace, routeVSCodeMarketplace, routeSettings)
+    val routes = listOf(
+        routeJetbrainsMarketplace,
+        routeVSCodeMarketplace,
+        routeSettings
+    )
 
     val navController = rememberNavController()
 
@@ -126,7 +130,6 @@ fun BottomNavigationBar(navController: NavController, routes: List<NavigationBar
                     )
                 },
                 label = { Text(stringResource(route.nameResource)) },
-                // TODO: Fix route selection
                 selected = currentDestination?.route == route.route,
                 onClick = {
                     navController.navigate(route.route) {
