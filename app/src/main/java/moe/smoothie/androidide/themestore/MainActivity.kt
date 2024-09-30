@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -29,9 +30,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import moe.smoothie.androidide.themestore.ui.JetbrainsStoreScroller
+import moe.smoothie.androidide.themestore.ui.StoreFrontScroller
 import moe.smoothie.androidide.themestore.data.NavigationBarRoute
+import moe.smoothie.androidide.themestore.ui.JetbrainsStoreScroller
+import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCard
+import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCardState
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
+import moe.smoothie.androidide.themestore.viewmodels.JetbrainsStoreViewModel
 import okhttp3.OkHttpClient
 import javax.inject.Inject
 

@@ -25,30 +25,30 @@ class JetbrainsStoreViewModel @Inject constructor(
     private val tag = "JetbrainsStoreViewModel"
     private val basePreviewUrl = "https://downloads.marketplace.jetbrains.com"
 
-    private val _items = MutableStateFlow<List<JetbrainsThemeCardState>>(emptyList())
-    val items: StateFlow<List<JetbrainsThemeCardState>> = _items
+    private val mutableItems =  MutableStateFlow<List<JetbrainsThemeCardState>>(emptyList())
+    val items: StateFlow<List<JetbrainsThemeCardState>> = mutableItems
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    private val mutableIsLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = mutableIsLoading
 
-    private val _allItemsLoaded = MutableStateFlow(false)
-    val allItemsLoaded: StateFlow<Boolean> = _allItemsLoaded
+    private val mutableAllItemsLoaded = MutableStateFlow(false)
+    val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun loadItems(pageSize: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (_allItemsLoaded.value) {
+            if (mutableAllItemsLoaded.value) {
                 return@launch
             }
 
-            if (_isLoading.value) {
+            if (mutableIsLoading.value) {
                 return@launch
             }
 
-            _isLoading.update { true }
+            mutableIsLoading.update { true }
 
             val request = Request.Builder()
-                .url(getPageUrl(_items.value.size, pageSize))
+                .url(getPageUrl(mutableItems.value.size, pageSize))
                 .build()
 
             try {
@@ -70,7 +70,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                         return@use
                     }
 
-                    _items.update { list ->
+                    mutableItems.update { list ->
                         list + data.plugins.map { plugin ->
                             JetbrainsThemeCardState(
                                 previewUrl = basePreviewUrl + plugin.previewImage,
@@ -83,7 +83,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                     }
 
                     if (data.total <= items.value.size) {
-                        _allItemsLoaded.update { true }
+                        mutableAllItemsLoaded.update { true }
                     }
                 }
             } catch (exception: Exception) {
@@ -92,7 +92,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                 exception.printStackTrace()
             }
 
-            _isLoading.update { false }
+            mutableIsLoading.update { false }
         }
     }
 
