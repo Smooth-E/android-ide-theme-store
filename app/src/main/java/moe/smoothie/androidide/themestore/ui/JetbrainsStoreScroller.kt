@@ -22,6 +22,6 @@ fun JetbrainsStoreScroller(
         isLoading = isLoading.value,
         itemsPerPage = itemsPerPage,
         cardComposable = { state -> JetbrainsThemeCard(state) },
-        loadItems = { viewModel.loadItems(itemsPerPage) }
+        viewModel = viewModel
     )
 }

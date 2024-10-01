@@ -19,10 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
@@ -107,14 +109,23 @@ fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
                         )
                     }
                 }
-                Text(
-                    text = state.trimmedDescription,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = spacing / 2),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(modifier = Modifier.padding(top = spacing / 2)) {
+                    val textStyle = MaterialTheme.typography.bodyMedium
+                    val maxLines = 3
+                    val height = with(LocalDensity.current) {
+                        textStyle.lineHeight.toDp() * maxLines
+                    }
+
+                    Text(
+                        text = state.trimmedDescription,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height),
+                        style = textStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = maxLines
+                    )
+                }
             }
         }
     }

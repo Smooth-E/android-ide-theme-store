@@ -1,6 +1,7 @@
 package moe.smoothie.androidide.themestore.viewmodels
 
 import android.util.Log
+import androidx.compose.foundation.rememberScrollState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class JetbrainsStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
-) : ViewModel() {
+) : ViewModel(), StoreFrontViewModel {
     private val tag = "JetbrainsStoreViewModel"
     private val basePreviewUrl = "https://downloads.marketplace.jetbrains.com"
 
@@ -35,7 +36,7 @@ class JetbrainsStoreViewModel @Inject constructor(
     val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun loadItems(pageSize: Int) {
+    override fun loadItems(pageSize: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             if (mutableAllItemsLoaded.value) {
                 return@launch
@@ -94,6 +95,12 @@ class JetbrainsStoreViewModel @Inject constructor(
 
             mutableIsLoading.update { false }
         }
+    }
+
+    override fun reload(pageSize: Int) {
+        mutableAllItemsLoaded.update { false }
+        mutableItems.update { emptyList() }
+        loadItems(pageSize)
     }
 
     private fun getPageUrl(offset: Int, pageSize: Int) =

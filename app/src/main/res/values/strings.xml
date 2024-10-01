@@ -3,4 +3,7 @@
     <string name="source_jetbrains">JetBrains</string>
     <string name="source_vscode">VSCode</string>
     <string name="destination_settings">Settings</string>
+    <string name="header_all_loaded">That\'s all!</string>
+    <string name="description_all_loaded">You\'ve scrolled past %d items. Try using the search bar to guide your choice!</string>
+    <string name="button_reload">Reload</string>
 </resources>
