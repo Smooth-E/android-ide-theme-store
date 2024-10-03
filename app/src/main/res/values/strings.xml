@@ -8,4 +8,10 @@
     <string name="button_reload">Reload</string>
     <string name="header_fetching_items">Fetching items</string>
     <string name="message_fetching_items">Fetching new items from the server. The duration depends on your connection speed. Something awesome is on the way!</string>
+    <string name="header_failure_receiving">Lost in transit</string>
+    <string name="message_failure_receiving">An error occurred either on the server side on yours. We did not receive any cool data</string>
+    <string name="header_unexpected_response">We didn\'t understand each other…</string>
+    <string name="message_unexpected_response">Received something unexpected from the server</string>
+    <string name="header_no_connection">Off the line</string>
+    <string name="message_no_connection">It looks like you are not connected to any network. How are we supposed to deliver information?</string>
 </resources>

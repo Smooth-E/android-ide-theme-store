@@ -1,7 +1,7 @@
 package moe.smoothie.androidide.themestore.viewmodels
 
+import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.rememberScrollState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.JetbrainsStorefrontResponse
 import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCardState
+import moe.smoothie.androidide.themestore.util.hasNetwork
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.coroutines.executeAsync
@@ -22,21 +23,38 @@ import javax.inject.Inject
 @HiltViewModel
 class JetbrainsStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
-) : ViewModel(), StoreFrontViewModel {
+) : ViewModel(), StoreFrontViewModel<JetbrainsThemeCardState> {
     private val tag = "JetbrainsStoreViewModel"
     private val basePreviewUrl = "https://downloads.marketplace.jetbrains.com"
 
     private val mutableItems =  MutableStateFlow<List<JetbrainsThemeCardState>>(emptyList())
-    val items: StateFlow<List<JetbrainsThemeCardState>> = mutableItems
+    override val items: StateFlow<List<JetbrainsThemeCardState>> = mutableItems
 
     private val mutableIsLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = mutableIsLoading
+    override val isLoading: StateFlow<Boolean> = mutableIsLoading
 
     private val mutableAllItemsLoaded = MutableStateFlow(false)
-    val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
+    override val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
+
+    private val mutableErrorReceiving = MutableStateFlow(false)
+    override val errorReceiving: StateFlow<Boolean> = mutableErrorReceiving
+
+    private val mutableDeviceHasNetwork = MutableStateFlow(false)
+    override val deviceHasNetwork: StateFlow<Boolean> = mutableDeviceHasNetwork
+
+    private val mutableErrorParsingResponse = MutableStateFlow(false)
+    override val errorParsingResponse: StateFlow<Boolean> = mutableErrorParsingResponse
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun loadItems(pageSize: Int) {
+    override fun loadItems(context: Context, pageSize: Int) {
+        mutableErrorReceiving.update { false }
+        mutableErrorParsingResponse.update { false }
+
+        mutableDeviceHasNetwork.update { hasNetwork(context) }
+        if (!deviceHasNetwork.value) {
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             if (mutableAllItemsLoaded.value) {
                 return@launch
@@ -56,6 +74,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                 httpClient.newCall(request).executeAsync().use { response ->
                     if (!response.isSuccessful) {
                         Log.d(tag, "Request was not successful.\nUrl: ${request.url}")
+                        mutableErrorReceiving.update { true }
                         return@use
                     }
 
@@ -68,6 +87,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                         Log.e(tag, "Error serializing the response")
                         Log.e(tag, "Response body:\n${responseBody.split(",").joinToString("\n")}")
                         Log.e(tag, exception.stackTraceToString())
+                        mutableErrorParsingResponse.update { true }
                         return@use
                     }
 
@@ -91,16 +111,17 @@ class JetbrainsStoreViewModel @Inject constructor(
                 val url = getPageUrl(items.value.size, pageSize)
                 Log.e(tag, "Exception loading ne items for $url")
                 exception.printStackTrace()
+                mutableErrorReceiving.update { true }
             }
 
             mutableIsLoading.update { false }
         }
     }
 
-    override fun reload(pageSize: Int) {
+    override fun reload(context: Context, pageSize: Int) {
         mutableAllItemsLoaded.update { false }
         mutableItems.update { emptyList() }
-        loadItems(pageSize)
+        loadItems(context, pageSize)
     }
 
     private fun getPageUrl(offset: Int, pageSize: Int) =

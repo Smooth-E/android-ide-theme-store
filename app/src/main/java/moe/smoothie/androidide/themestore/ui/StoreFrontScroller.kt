@@ -6,21 +6,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,19 +33,24 @@ import moe.smoothie.androidide.themestore.viewmodels.StoreFrontViewModel
 
 @Composable
 fun <State> StoreFrontScroller(
-    cards: List<State>,
-    isLoading: Boolean,
-    allItemsLoaded: Boolean,
-    itemsPerPage: Int,
+    viewModel: StoreFrontViewModel<State>,
     cardComposable: @Composable (State) -> Unit,
-    viewModel: StoreFrontViewModel
+    itemsPerPage: Int
 ) {
     val tag = "StoreFrontScroller"
 
+    val cards by viewModel.items.collectAsState()
     Log.d(tag, "Composing the scroller with ${cards.size} items")
 
     val lazyGridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val allItemsLoaded by viewModel.allItemsLoaded.collectAsState()
+    val errorParsingResponse by viewModel.errorParsingResponse.collectAsState()
+    val errorReceiving by viewModel.errorReceiving.collectAsState()
+    val deviceHasNetwork by viewModel.deviceHasNetwork.collectAsState()
 
     LazyVerticalGrid(
         modifier = Modifier.fillMaxWidth(),
@@ -63,7 +70,7 @@ fun <State> StoreFrontScroller(
             if (index == cards.size - itemsPerPage / 2) {
                 SideEffect {
                     if (!isLoading) {
-                        viewModel.loadItems(itemsPerPage)
+                        viewModel.loadItems(context, itemsPerPage)
                     }
                 }
             }
@@ -71,7 +78,7 @@ fun <State> StoreFrontScroller(
         if (cards.isEmpty()) {
             item {
                 SideEffect {
-                    viewModel.loadItems(itemsPerPage)
+                    viewModel.loadItems(context, itemsPerPage)
                 }
             }
         }
@@ -83,16 +90,64 @@ fun <State> StoreFrontScroller(
                 val modifier = Modifier.width(min(450.dp, maxWidth))
 
                 if (!allItemsLoaded) {
-                    FooterCard(
-                        modifier = modifier,
-                        hero = {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp)
-                            )
-                        },
-                        header = { Text(stringResource(R.string.header_fetching_items)) },
-                        message = { Text(stringResource(R.string.message_fetching_items)) }
-                    )
+                    if (!deviceHasNetwork) {
+                        FooterCard(
+                            modifier = modifier,
+                            hero = {
+                                Icon(
+                                    painter = painterResource(R.drawable.round_signal_wifi_off_24),
+                                    contentDescription = null
+                                )
+                            },
+                            header = { Text(stringResource(R.string.header_no_connection)) },
+                            message = { Text(stringResource(R.string.message_no_connection)) },
+                            button = {
+                                ReloadFooterCardButton(
+                                    lazyGridState,
+                                    viewModel,
+                                    itemsPerPage
+                                )
+                            }
+                        )
+                    } else if (errorReceiving) {
+                        FooterCard(
+                            modifier = modifier,
+                            hero = {
+                                Icon(
+                                    painter = painterResource(R.drawable.round_data_object_24),
+                                    contentDescription = null
+                                )
+                            },
+                            header = { Text(stringResource(R.string.header_failure_receiving)) },
+                            message = { Text(stringResource(R.string.message_failure_receiving)) },
+                            button = {
+                                ReloadFooterCardButton(
+                                    lazyGridState,
+                                    viewModel,
+                                    itemsPerPage
+                                )
+                            }
+                        )
+                    } else if (errorParsingResponse) {
+                        FooterCard(
+                            modifier = modifier,
+                            hero = {
+                                Icon(
+                                    painter = painterResource(R.drawable.round_translate_24),
+                                    contentDescription = null
+                                )
+                            },
+                            header = { Text(stringResource(R.string.header_unexpected_response)) },
+                            message = { Text(stringResource(R.string.message_unexpected_response)) },
+                            button = {
+                                ReloadFooterCardButton(
+                                    lazyGridState,
+                                    viewModel,
+                                    itemsPerPage
+                                )
+                            }
+                        )
+                    }
                 } else {
                     FooterCard(
                         modifier = modifier,
@@ -110,26 +165,38 @@ fun <State> StoreFrontScroller(
                             )
                         },
                         button = {
-                            FilledTonalButton(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    coroutineScope.launch {
-                                        lazyGridState.animateScrollToItem(0)
-                                        viewModel.reload(itemsPerPage)
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.baseline_refresh_24),
-                                    contentDescription = null
-                                )
-                                Text(stringResource(R.string.button_reload))
-
-                            }
-                        },
+                            ReloadFooterCardButton(lazyGridState, viewModel, itemsPerPage)
+                        }
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun <State> ReloadFooterCardButton(
+    lazyGridState: LazyGridState,
+    viewModel: StoreFrontViewModel<State>,
+    itemsPerPage: Int
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    FilledTonalButton(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            coroutineScope.launch {
+                lazyGridState.animateScrollToItem(0)
+                viewModel.reload(context, itemsPerPage)
+            }
+        }
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.baseline_refresh_24),
+            contentDescription = null
+        )
+        Text(stringResource(R.string.button_reload))
+
     }
 }
