@@ -5,16 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,27 +76,26 @@ fun <State> StoreFrontScroller(
             }
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
-            if (!allItemsLoaded) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .height(20.dp)
-                            .width(20.dp)
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                val modifier = Modifier.width(min(450.dp, maxWidth))
 
-                    )
-                    Text("Something", modifier = Modifier.fillMaxWidth())
-                }
-            } else {
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
+                if (!allItemsLoaded) {
                     FooterCard(
-                        modifier = Modifier.width(min(450.dp, maxWidth)),
+                        modifier = modifier,
+                        hero = {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        header = { Text(stringResource(R.string.header_fetching_items)) },
+                        message = { Text(stringResource(R.string.message_fetching_items)) }
+                    )
+                } else {
+                    FooterCard(
+                        modifier = modifier,
                         hero = {
                             Icon(
                                 painter = painterResource(R.drawable.round_auto_awesome_24),
@@ -111,19 +109,24 @@ fun <State> StoreFrontScroller(
                                     .format(cards.size)
                             )
                         },
-                        buttonContent = {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_refresh_24),
-                                contentDescription = null
-                            )
-                            Text(stringResource(R.string.button_reload))
-                        },
-                        onClick = {
-                            coroutineScope.launch {
-                                lazyGridState.animateScrollToItem(0)
-                                viewModel.reload(itemsPerPage)
+                        button = {
+                            FilledTonalButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    coroutineScope.launch {
+                                        lazyGridState.animateScrollToItem(0)
+                                        viewModel.reload(itemsPerPage)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.baseline_refresh_24),
+                                    contentDescription = null
+                                )
+                                Text(stringResource(R.string.button_reload))
+
                             }
-                        }
+                        },
                     )
                 }
             }

@@ -6,4 +6,6 @@
     <string name="header_all_loaded">That\'s all!</string>
     <string name="description_all_loaded">You\'ve scrolled past %d items. Try using the search bar to guide your choice!</string>
     <string name="button_reload">Reload</string>
+    <string name="header_fetching_items">Fetching items</string>
+    <string name="message_fetching_items">Fetching new items from the server. The duration depends on your connection speed. Something awesome is on the way!</string>
 </resources>
