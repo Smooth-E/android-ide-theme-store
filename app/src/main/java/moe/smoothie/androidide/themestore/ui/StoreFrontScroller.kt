@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.viewmodels.StoreFrontViewModel
@@ -103,9 +104,10 @@ fun <State> StoreFrontScroller(
                             message = { Text(stringResource(R.string.message_no_connection)) },
                             button = {
                                 ReloadFooterCardButton(
-                                    lazyGridState,
-                                    viewModel,
-                                    itemsPerPage
+                                    lazyGridState = lazyGridState,
+                                    viewModel = viewModel,
+                                    itemsPerPage = itemsPerPage,
+                                    coroutineScope = coroutineScope
                                 )
                             }
                         )
@@ -122,9 +124,10 @@ fun <State> StoreFrontScroller(
                             message = { Text(stringResource(R.string.message_failure_receiving)) },
                             button = {
                                 ReloadFooterCardButton(
-                                    lazyGridState,
-                                    viewModel,
-                                    itemsPerPage
+                                    lazyGridState = lazyGridState,
+                                    viewModel = viewModel,
+                                    itemsPerPage = itemsPerPage,
+                                    coroutineScope = coroutineScope
                                 )
                             }
                         )
@@ -141,9 +144,10 @@ fun <State> StoreFrontScroller(
                             message = { Text(stringResource(R.string.message_unexpected_response)) },
                             button = {
                                 ReloadFooterCardButton(
-                                    lazyGridState,
-                                    viewModel,
-                                    itemsPerPage
+                                    lazyGridState = lazyGridState,
+                                    viewModel = viewModel,
+                                    itemsPerPage = itemsPerPage,
+                                    coroutineScope = coroutineScope
                                 )
                             }
                         )
@@ -165,7 +169,12 @@ fun <State> StoreFrontScroller(
                             )
                         },
                         button = {
-                            ReloadFooterCardButton(lazyGridState, viewModel, itemsPerPage)
+                            ReloadFooterCardButton(
+                                lazyGridState = lazyGridState,
+                                viewModel = viewModel,
+                                itemsPerPage = itemsPerPage,
+                                coroutineScope = coroutineScope
+                            )
                         }
                     )
                 }
@@ -177,10 +186,10 @@ fun <State> StoreFrontScroller(
 @Composable
 internal fun <State> ReloadFooterCardButton(
     lazyGridState: LazyGridState,
+    coroutineScope: CoroutineScope,
     viewModel: StoreFrontViewModel<State>,
     itemsPerPage: Int
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     FilledTonalButton(
@@ -197,6 +206,5 @@ internal fun <State> ReloadFooterCardButton(
             contentDescription = null
         )
         Text(stringResource(R.string.button_reload))
-
     }
 }

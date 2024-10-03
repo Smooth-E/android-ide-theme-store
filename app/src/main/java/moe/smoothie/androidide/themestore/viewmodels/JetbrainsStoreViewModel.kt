@@ -103,7 +103,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                         }
                     }
 
-                    if (data.total <= items.value.size) {
+                    if (data.total <= items.value.size || items.value.size > 0) {
                         mutableAllItemsLoaded.update { true }
                     }
                 }

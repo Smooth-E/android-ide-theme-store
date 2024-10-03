@@ -24,7 +24,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
@@ -133,7 +132,7 @@ fun JetbrainsThemeCard(state: JetbrainsThemeCardState) {
 
 @Preview
 @Composable
-fun JetbrainsThemeCardPreview(themeName: String = "One Dark Pro Theme") {
+internal fun JetbrainsThemeCardPreview(themeName: String = "One Dark Pro Theme") {
     AndroidIDEThemesTheme {
         Box(modifier = Modifier.width(300.dp)) {
             JetbrainsThemeCard(
@@ -151,5 +150,5 @@ fun JetbrainsThemeCardPreview(themeName: String = "One Dark Pro Theme") {
 
 @Preview
 @Composable
-fun LongThemeNamePreview() =
+internal fun LongThemeNamePreview() =
     JetbrainsThemeCardPreview("A very very very long name of a theme, yeah")

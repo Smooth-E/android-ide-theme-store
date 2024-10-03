@@ -64,7 +64,7 @@ fun FooterCard(
 
 @Preview
 @Composable
-fun FooterCardPreview() {
+internal fun FooterCardPreview() {
     AndroidIDEThemesTheme {
         FooterCard(
             modifier = Modifier.width(300.dp),
