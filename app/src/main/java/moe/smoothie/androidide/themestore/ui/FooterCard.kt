@@ -2,18 +2,19 @@ package moe.smoothie.androidide.themestore.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -27,11 +28,10 @@ import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 @Composable
 fun FooterCard(
     modifier: Modifier = Modifier,
-    icon: Painter?,
-    header: String? = null,
-    message: String? = null,
-    buttonIcon: Painter? = null,
-    buttonText: String? = null,
+    hero: @Composable () -> Unit = { },
+    header: @Composable () -> Unit = { },
+    message: @Composable () -> Unit = { },
+    buttonContent: @Composable RowScope.() -> Unit = { },
     onClick: () -> Unit = { },
 ) {
     ElevatedCard {
@@ -40,43 +40,31 @@ fun FooterCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            icon?.let {
-                Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary
-                )
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.secondary
+            ) {
+                hero()
             }
-            header?.let {
-                Text(
-                    text = header,
-                    style = MaterialTheme.typography.titleMedium,
+            CompositionLocalProvider(
+                LocalTextStyle provides MaterialTheme.typography.titleMedium.copy(
                     textAlign = TextAlign.Center
                 )
+            ) {
+                header()
             }
-            message?.let {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
+            CompositionLocalProvider(
+                LocalTextStyle provides MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+            ) {
+                message()
             }
             FilledTonalButton(
                 onClick = onClick,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    buttonIcon?.let {
-                        Icon(buttonIcon, contentDescription = null)
-                    }
-                    buttonText?.let {
-                        Text(buttonText)
-                    }
-                }
+                buttonContent()
             }
         }
     }
@@ -88,11 +76,16 @@ fun FooterCardPreview() {
     AndroidIDEThemesTheme {
         FooterCard(
             modifier = Modifier.width(300.dp),
-            icon = painterResource(R.drawable.baseline_warning_24),
-            header = "An error has occurred",
-            message = "And this error has some long description which spans several lines because it is indeed pretty long",
-            buttonText = "Reload and try again",
-            buttonIcon = painterResource(R.drawable.baseline_settings_24)
+            hero = { Icon(painterResource(R.drawable.baseline_warning_24), contentDescription = null) },
+            header = { Text("An error has occurred") },
+            message = { Text("And this error has some long description which spans several lines because it is indeed pretty long") },
+            buttonContent = {
+                Text("Reload and try again")
+                Icon(
+                    painter = painterResource(R.drawable.baseline_settings_24),
+                    contentDescription = null
+                )
+            }
         )
     }
 }

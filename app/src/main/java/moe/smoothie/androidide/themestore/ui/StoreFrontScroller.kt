@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -97,11 +98,26 @@ fun <State> StoreFrontScroller(
                 ) {
                     FooterCard(
                         modifier = Modifier.width(min(450.dp, maxWidth)),
-                        icon = painterResource(R.drawable.round_auto_awesome_24),
-                        header = stringResource(R.string.header_all_loaded),
-                        message = stringResource(R.string.description_all_loaded).format(cards.size),
-                        buttonText = stringResource(R.string.button_reload),
-                        buttonIcon = painterResource(R.drawable.baseline_refresh_24),
+                        hero = {
+                            Icon(
+                                painter = painterResource(R.drawable.round_auto_awesome_24),
+                                contentDescription = null
+                            )
+                        },
+                        header = { Text(stringResource(R.string.header_all_loaded)) },
+                        message = {
+                            Text(
+                                stringResource(R.string.description_all_loaded)
+                                    .format(cards.size)
+                            )
+                        },
+                        buttonContent = {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_refresh_24),
+                                contentDescription = null
+                            )
+                            Text(stringResource(R.string.button_reload))
+                        },
                         onClick = {
                             coroutineScope.launch {
                                 lazyGridState.animateScrollToItem(0)
