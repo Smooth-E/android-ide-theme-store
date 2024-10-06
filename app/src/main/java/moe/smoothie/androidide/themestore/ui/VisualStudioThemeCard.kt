@@ -133,6 +133,7 @@ fun VisualStudioThemeCard(state: VisualStudioThemeCardState) {
                     )
                 }
             }
+            // TODO: Add a download counter
         }
     }
 }
