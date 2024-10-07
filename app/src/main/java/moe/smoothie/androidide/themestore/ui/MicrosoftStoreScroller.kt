@@ -15,7 +15,7 @@ fun MicrosoftStoreScroller(
 
     StoreFrontScroller(
         viewModel = viewModel,
-        cardComposable = { VisualStudioThemeCard(it) },
+        cardComposable = { MicrosoftStoreCard(it) },
         itemsPerPage = itemsPerPage,
         minSize = 150.dp
     )

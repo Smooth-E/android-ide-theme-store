@@ -1,5 +1,6 @@
 package moe.smoothie.androidide.themestore.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,14 +11,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,8 +38,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
+import moe.smoothie.androidide.themestore.util.formatNumber
 
-data class VisualStudioThemeCardState(
+data class MicrosoftStoreCardState(
     val iconUrl: String,
     val name: String,
     val developerName: String,
@@ -41,7 +52,7 @@ data class VisualStudioThemeCardState(
 )
 
 @Composable
-fun VisualStudioThemeCard(state: VisualStudioThemeCardState) {
+fun MicrosoftStoreCard(state: MicrosoftStoreCardState) {
     val spacing = 8.dp
 
     OutlinedCard(
@@ -62,17 +73,52 @@ fun VisualStudioThemeCard(state: VisualStudioThemeCardState) {
             ) {
                 AsyncImage(
                     model = state.iconUrl,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape),
                     contentDescription = null,
                     contentScale = ContentScale.Fit
                 )
-                Text(
-                    text = state.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+
+                var boxWidth by remember { mutableStateOf(0) }
+                var textWidth by remember { mutableStateOf(0) }
+
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { boxWidth = it.size.width }
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .basicMarquee()
+                            .onGloballyPositioned { textWidth = it.size.width },
+                        text = state.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                    )
+
+                    if (boxWidth < textWidth) {
+                        Box(
+                            Modifier
+                                .matchParentSize()
+                                .graphicsLayer { clip = true }
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.surface,
+                                            androidx.compose.ui.graphics.Color.Transparent,
+                                            androidx.compose.ui.graphics.Color.Transparent,
+                                            androidx.compose.ui.graphics.Color.Transparent,
+                                            androidx.compose.ui.graphics.Color.Transparent,
+                                            MaterialTheme.colorScheme.surface,
+                                        )
+                                    )
+                                )
+                        )
+                    }
+                }
             }
 
             val textStyle = MaterialTheme.typography.bodySmall
@@ -112,12 +158,6 @@ fun VisualStudioThemeCard(state: VisualStudioThemeCardState) {
                 }
             }
 
-            Text(
-                text = state.description,
-                maxLines = 3,
-                style = MaterialTheme.typography.bodySmall,
-                overflow = TextOverflow.Ellipsis,
-            )
             Row {
                 for (i in 1..5) {
                     val painter =
@@ -133,28 +173,62 @@ fun VisualStudioThemeCard(state: VisualStudioThemeCardState) {
                     )
                 }
             }
-            // TODO: Add a download counter
+
+            Row(modifier = Modifier.height(lineHeightDp)) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_download_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = formatNumber(state.downloads),
+                    style = textStyle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            val descriptionTypography = MaterialTheme.typography.bodyMedium
+            val descriptionHeight = with(LocalDensity.current) {
+                descriptionTypography.lineHeight.toDp() * 3
+            }
+            Text(
+                modifier = Modifier.height(descriptionHeight),
+                text = state.description,
+                maxLines = 3,
+                style = descriptionTypography,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
 
 @Preview
 @Composable
-internal fun VisualStudioThemeCardPreview() {
+internal fun Preview(
+    name: String = "Material Icon Theme",
+    description: String = "Material Design icons for Visual Studio Code, and here is some other description because why not"
+) {
     AndroidIDEThemesTheme {
-        Box(modifier = Modifier.width(200.dp)) {
-            VisualStudioThemeCard(
-                VisualStudioThemeCardState(
+        Box(modifier = Modifier.width(150.dp)) {
+            MicrosoftStoreCard(
+                MicrosoftStoreCardState(
                     iconUrl = "https://example.com/exampple.png",
-                    name = "Material Icon Theme",
+                    name = name,
                     developerName = "Microsoft",
                     developerWebsite = "microsoft.com",
                     developerWebsiteVerified = true,
                     downloads = 19_300_000,
-                    description = "Material Design icons for Visual Studio Code, and here is some other description because why not",
+                    description = description,
                     rating = 4.5f
                 )
             )
         }
     }
 }
+
+@Preview
+@Composable
+internal fun ShortValuesPreview() = Preview(
+    name = "Darcula",
+    description = "A pretty short description"
+)

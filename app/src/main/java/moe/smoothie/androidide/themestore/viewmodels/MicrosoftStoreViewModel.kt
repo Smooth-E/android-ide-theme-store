@@ -15,7 +15,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.MicrosoftStoreRequestPayload
 import moe.smoothie.androidide.themestore.data.MicrosoftStoreResponse
-import moe.smoothie.androidide.themestore.ui.VisualStudioThemeCardState
+import moe.smoothie.androidide.themestore.ui.MicrosoftStoreCardState
 import moe.smoothie.androidide.themestore.util.hasNetwork
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -27,11 +27,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MicrosoftStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
-) : ViewModel(), StoreFrontViewModel<VisualStudioThemeCardState> {
+) : ViewModel(), StoreFrontViewModel<MicrosoftStoreCardState> {
     private val tag = "MicrosoftStoreViewModel"
 
-    private val mutableItems = MutableStateFlow<List<VisualStudioThemeCardState>>(emptyList())
-    override val items: StateFlow<List<VisualStudioThemeCardState>> = mutableItems
+    private val mutableItems = MutableStateFlow<List<MicrosoftStoreCardState>>(emptyList())
+    override val items: StateFlow<List<MicrosoftStoreCardState>> = mutableItems
 
     private val mutableIsLoading = MutableStateFlow(false)
     override val isLoading: StateFlow<Boolean> = mutableIsLoading
@@ -101,7 +101,7 @@ class MicrosoftStoreViewModel @Inject constructor(
 
                     mutableItems.update { list ->
                         list + data!!.results.first().extensions.map {
-                            VisualStudioThemeCardState(
+                            MicrosoftStoreCardState(
                                 iconUrl = it.versions.first().files.find {
                                     it.assetType == "Microsoft.VisualStudio.Services.Icons.Default"
                                 }?.source ?: "",
