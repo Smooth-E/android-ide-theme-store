@@ -2,6 +2,7 @@ package moe.smoothie.androidide.themestore.data
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import moe.smoothie.androidide.themestore.util.AnyFieldSerializer
 
 @Serializable
 data class MicrosoftStoreResponse(
@@ -21,6 +22,7 @@ data class MicrosoftStoreResponse(
             val displayName: String,
             val flags: String,
             val lastUpdated: String,
+            val publishedDate: String,
             val releaseDate: String,
             val shortDescription: String,
             val versions: List<Version>,
@@ -36,7 +38,7 @@ data class MicrosoftStoreResponse(
                 val publisherName: String,
                 val displayName: String,
                 val flags: String,
-                val domain: String,
+                val domain: String?,
                 val isDomainVerified: Boolean
             )
 
@@ -66,7 +68,7 @@ data class MicrosoftStoreResponse(
             @Serializable
             data class Statistic(
                 val statisticName: String,
-                @Contextual val value: Any
+                @Serializable(with = AnyFieldSerializer::class) val value: Any
             )
 
             @Serializable

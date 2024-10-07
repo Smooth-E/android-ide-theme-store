@@ -1,6 +1,7 @@
 package moe.smoothie.androidide.themestore.viewmodels
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.MicrosoftStoreRequestPayload
+import moe.smoothie.androidide.themestore.data.MicrosoftStoreResponse
 import moe.smoothie.androidide.themestore.ui.VisualStudioThemeCardState
 import moe.smoothie.androidide.themestore.util.hasNetwork
 import okhttp3.MediaType.Companion.toMediaType
@@ -26,6 +28,8 @@ import javax.inject.Inject
 class MicrosoftStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
 ) : ViewModel(), StoreFrontViewModel<VisualStudioThemeCardState> {
+    private val tag = "MicrosoftStoreViewModel"
+
     private val mutableItems = MutableStateFlow<List<VisualStudioThemeCardState>>(emptyList())
     override val items: StateFlow<List<VisualStudioThemeCardState>> = mutableItems
 
@@ -76,10 +80,48 @@ class MicrosoftStoreViewModel @Inject constructor(
                 .build()
 
             try {
-                httpClient.newCall(request).executeAsync().use {
+                httpClient.newCall(request).executeAsync().use { response ->
+                    if (!response.isSuccessful) {
+                        Log.e(tag, "Request failed ${response.code}\n${response.body}")
+                        mutableErrorReceiving.update { true }
+                        return@use
+                    }
 
+                    var responseBody = ""
+                    var data: MicrosoftStoreResponse? = null
+                    try {
+                        responseBody = response.body.string()
+                        data = Json.decodeFromString(responseBody)
+                    } catch (exception: Exception) {
+                        Log.d(tag, "Failed to serialize the response")
+                        exception.printStackTrace()
+                        mutableErrorParsingResponse.update { true }
+                        return@use
+                    }
+
+                    mutableItems.update { list ->
+                        list + data!!.results.first().extensions.map {
+                            VisualStudioThemeCardState(
+                                iconUrl = it.versions.first().files.find {
+                                    it.assetType == "Microsoft.VisualStudio.Services.Icons.Default"
+                                }?.source ?: "",
+                                name = it.displayName,
+                                developerName = it.publisher.displayName,
+                                developerWebsite = it.publisher.domain,
+                                developerWebsiteVerified = it.publisher.isDomainVerified,
+                                downloads = it.statistics.find {
+                                    it.statisticName == "downloadCount"
+                                }?.value.toString().toLongOrNull() ?: 0L,
+                                description = it.shortDescription,
+                                rating = it.statistics.find {
+                                    it.statisticName == "averagerating"
+                                }?.value.toString().toFloatOrNull() ?: 0f
+                            )
+                        }
+                    }
                 }
             } catch (exception: Exception) {
+                Log.e(tag, "Error parsing or receiving the response")
                 exception.printStackTrace()
                 mutableErrorReceiving.update { true }
             }

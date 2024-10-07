@@ -35,6 +35,7 @@ import moe.smoothie.androidide.themestore.data.NavigationBarRoute
 import moe.smoothie.androidide.themestore.ui.JetbrainsStoreScroller
 import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCard
 import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCardState
+import moe.smoothie.androidide.themestore.ui.MicrosoftStoreScroller
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 import moe.smoothie.androidide.themestore.viewmodels.JetbrainsStoreViewModel
 import okhttp3.OkHttpClient
@@ -92,7 +93,7 @@ fun MainActivityView() {
                     .padding(innerPadding)
             ) {
                 composable(routeJetbrainsMarketplace.route) { JetbrainsStoreScroller(it) }
-                composable(routeVSCodeMarketplace.route) { PageContent("VSCode themes will be here") }
+                composable(routeVSCodeMarketplace.route) { MicrosoftStoreScroller(it    ) }
                 composable(routeSettings.route) { PageContent("Settings will be here") }
             }
         },
