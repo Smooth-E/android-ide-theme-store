@@ -77,7 +77,7 @@ class MicrosoftStoreViewModel @Inject constructor(
 
             try {
                 httpClient.newCall(request).executeAsync().use {
-                    
+
                 }
             } catch (exception: Exception) {
                 exception.printStackTrace()
