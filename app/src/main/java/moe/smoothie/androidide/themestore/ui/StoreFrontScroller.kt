@@ -105,90 +105,38 @@ fun <State> StoreFrontScroller(
 
                     if (!allItemsLoaded) {
                         if (!deviceHasNetwork) {
-                            FooterCard(
+                            FooterNoNetwork(
                                 modifier = modifier,
-                                hero = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.round_signal_wifi_off_24),
-                                        contentDescription = null
-                                    )
-                                },
-                                header = { Text(stringResource(R.string.header_no_connection)) },
-                                message = { Text(stringResource(R.string.message_no_connection)) },
-                                button = {
-                                    ReloadFooterCardButton(
-                                        lazyGridState = lazyGridState,
-                                        viewModel = viewModel,
-                                        itemsPerPage = itemsPerPage,
-                                        coroutineScope = coroutineScope
-                                    )
-                                }
+                                lazyGridState = lazyGridState,
+                                viewModel = viewModel,
+                                itemsPerPage = itemsPerPage,
+                                coroutineScope = coroutineScope
                             )
                         } else if (errorReceiving) {
-                            FooterCard(
+                            FooterErrorReceiving(
                                 modifier = modifier,
-                                hero = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.round_data_object_24),
-                                        contentDescription = null
-                                    )
-                                },
-                                header = { Text(stringResource(R.string.header_failure_receiving)) },
-                                message = { Text(stringResource(R.string.message_failure_receiving)) },
-                                button = {
-                                    ReloadFooterCardButton(
-                                        lazyGridState = lazyGridState,
-                                        viewModel = viewModel,
-                                        itemsPerPage = itemsPerPage,
-                                        coroutineScope = coroutineScope
-                                    )
-                                }
+                                lazyGridState = lazyGridState,
+                                viewModel = viewModel,
+                                itemsPerPage = itemsPerPage,
+                                coroutineScope = coroutineScope
                             )
                         } else if (errorParsingResponse) {
-                            FooterCard(
+                            FooterErrorParsingResponse(
                                 modifier = modifier,
-                                hero = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.round_translate_24),
-                                        contentDescription = null
-                                    )
-                                },
-                                header = { Text(stringResource(R.string.header_unexpected_response)) },
-                                message = { Text(stringResource(R.string.message_unexpected_response)) },
-                                button = {
-                                    ReloadFooterCardButton(
-                                        lazyGridState = lazyGridState,
-                                        viewModel = viewModel,
-                                        itemsPerPage = itemsPerPage,
-                                        coroutineScope = coroutineScope
-                                    )
-                                }
+                                lazyGridState = lazyGridState,
+                                viewModel = viewModel,
+                                itemsPerPage = itemsPerPage,
+                                coroutineScope = coroutineScope
                             )
                         }
                     } else {
-                        FooterCard(
+                        FooterListEnd(
                             modifier = modifier,
-                            hero = {
-                                Icon(
-                                    painter = painterResource(R.drawable.round_auto_awesome_24),
-                                    contentDescription = null
-                                )
-                            },
-                            header = { Text(stringResource(R.string.header_all_loaded)) },
-                            message = {
-                                Text(
-                                    stringResource(R.string.description_all_loaded)
-                                        .format(cards.size)
-                                )
-                            },
-                            button = {
-                                ReloadFooterCardButton(
-                                    lazyGridState = lazyGridState,
-                                    viewModel = viewModel,
-                                    itemsPerPage = itemsPerPage,
-                                    coroutineScope = coroutineScope
-                                )
-                            }
+                            lazyGridState = lazyGridState,
+                            viewModel = viewModel,
+                            itemsPerPage = itemsPerPage,
+                            coroutineScope = coroutineScope,
+                            cardsSize = cards.size
                         )
                     }
                 }
@@ -213,7 +161,7 @@ fun <State> StoreFrontScroller(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_arrow_upward_24),
-                    contentDescription = null // TODO: Add content description
+                    contentDescription = stringResource(R.string.content_description_scroll_to_top)
                 )
             }
         }
@@ -244,4 +192,126 @@ internal fun <State> ReloadFooterCardButton(
         )
         Text(stringResource(R.string.button_reload))
     }
+}
+
+@Composable
+internal fun <State> FooterNoNetwork(
+    modifier: Modifier,
+    lazyGridState: LazyGridState,
+    viewModel: StoreFrontViewModel<State>,
+    itemsPerPage: Int,
+    coroutineScope: CoroutineScope
+) {
+    FooterCard(
+        modifier = modifier,
+        hero = {
+            Icon(
+                painter = painterResource(R.drawable.round_signal_wifi_off_24),
+                contentDescription = null
+            )
+        },
+        header = { Text(stringResource(R.string.header_no_connection)) },
+        message = { Text(stringResource(R.string.message_no_connection)) },
+        button = {
+            ReloadFooterCardButton(
+                lazyGridState = lazyGridState,
+                viewModel = viewModel,
+                itemsPerPage = itemsPerPage,
+                coroutineScope = coroutineScope
+            )
+        }
+    )
+}
+
+@Composable
+internal fun <State> FooterErrorReceiving(
+    modifier: Modifier,
+    lazyGridState: LazyGridState,
+    viewModel: StoreFrontViewModel<State>,
+    itemsPerPage: Int,
+    coroutineScope: CoroutineScope
+) {
+    FooterCard(
+        modifier = modifier,
+        hero = {
+            Icon(
+                painter = painterResource(R.drawable.round_data_object_24),
+                contentDescription = null
+            )
+        },
+        header = { Text(stringResource(R.string.header_failure_receiving)) },
+        message = { Text(stringResource(R.string.message_failure_receiving)) },
+        button = {
+            ReloadFooterCardButton(
+                lazyGridState = lazyGridState,
+                viewModel = viewModel,
+                itemsPerPage = itemsPerPage,
+                coroutineScope = coroutineScope
+            )
+        }
+    )
+}
+
+@Composable
+internal fun <State> FooterErrorParsingResponse(
+    modifier: Modifier,
+    lazyGridState: LazyGridState,
+    viewModel: StoreFrontViewModel<State>,
+    itemsPerPage: Int,
+    coroutineScope: CoroutineScope
+) {
+    FooterCard(
+        modifier = modifier,
+        hero = {
+            Icon(
+                painter = painterResource(R.drawable.round_translate_24),
+                contentDescription = null
+            )
+        },
+        header = { Text(stringResource(R.string.header_unexpected_response)) },
+        message = { Text(stringResource(R.string.message_unexpected_response)) },
+        button = {
+            ReloadFooterCardButton(
+                lazyGridState = lazyGridState,
+                viewModel = viewModel,
+                itemsPerPage = itemsPerPage,
+                coroutineScope = coroutineScope
+            )
+        }
+    )
+}
+
+@Composable
+internal fun <State> FooterListEnd(
+    modifier: Modifier,
+    lazyGridState: LazyGridState,
+    viewModel: StoreFrontViewModel<State>,
+    itemsPerPage: Int,
+    coroutineScope: CoroutineScope,
+    cardsSize: Int
+) {
+    FooterCard(
+        modifier = modifier,
+        hero = {
+            Icon(
+                painter = painterResource(R.drawable.round_auto_awesome_24),
+                contentDescription = null
+            )
+        },
+        header = { Text(stringResource(R.string.header_all_loaded)) },
+        message = {
+            Text(
+                stringResource(R.string.description_all_loaded)
+                    .format(cardsSize)
+            )
+        },
+        button = {
+            ReloadFooterCardButton(
+                lazyGridState = lazyGridState,
+                viewModel = viewModel,
+                itemsPerPage = itemsPerPage,
+                coroutineScope = coroutineScope
+            )
+        }
+    )
 }
