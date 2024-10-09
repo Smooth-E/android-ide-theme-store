@@ -109,7 +109,10 @@ fun PillSearchField(
                 exit = fadeOut()
             ) {
                 IconButton(
-                    onClick = { state = "" }
+                    onClick = {
+                        state = ""
+                        onValueChanged(state)
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_close_24),

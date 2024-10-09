@@ -90,7 +90,7 @@ fun <State> StoreFrontScroller(
             }
             items(
                 count = cards.size,
-                key = { index -> cards[index].hashCode() }
+                key = { index -> "${cards[index].hashCode()}-$index" }
             ) { index ->
                 Box(Modifier.animateItem()) {
                     cardComposable(cards[index])
