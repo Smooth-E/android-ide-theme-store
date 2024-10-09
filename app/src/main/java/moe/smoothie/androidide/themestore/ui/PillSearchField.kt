@@ -1,14 +1,12 @@
 package moe.smoothie.androidide.themestore.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,12 +48,17 @@ import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 @Composable
 fun PillSearchField(
     modifier: Modifier = Modifier,
-    onValueChanged: (String) -> Unit = {  },
+    onValueChanged: (String) -> Unit = { },
     elevation: Dp = 0.dp,
     initialQuery: String = ""
 ) {
-    var state by remember { mutableStateOf(initialQuery) }
+    val tag = "PillSearchField"
 
+    var state by remember { mutableStateOf(initialQuery) }
+    var focused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
+    val focusManager = LocalFocusManager.current
     Box(
         modifier = modifier
             .shadow(elevation)
@@ -65,7 +74,9 @@ fun PillSearchField(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                modifier = Modifier.padding(16.dp).size(24.dp),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(24.dp),
                 painter = painterResource(R.drawable.baseline_search_24),
                 contentDescription = null
             )
@@ -75,9 +86,7 @@ fun PillSearchField(
 
             Box(Modifier.weight(1f)) {
                 androidx.compose.animation.AnimatedVisibility(
-                    visible = state.isEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
+                    visible = state.isEmpty(), enter = fadeIn(), exit = fadeOut()
                 ) {
                     Text(
                         stringResource(R.string.message_search_bar_placeholder),
@@ -89,8 +98,7 @@ fun PillSearchField(
                         style = textStyle.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
-                BasicTextField(
-                    value = state,
+                BasicTextField(value = state,
                     onValueChange = {
                         state = it
                         onValueChanged(it)
@@ -99,21 +107,33 @@ fun PillSearchField(
                     modifier = Modifier
                         .height(height)
                         .wrapContentHeight()
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged {
+                            focused = it.isFocused
+                            Log.d(tag, "Focus changed: $it")
+                        },
                     textStyle = textStyle,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Search, autoCorrectEnabled = false
+                    ),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        Log.d(tag, "Received the \"Search\" action, freeing focus")
+                        focusManager.clearFocus()
+                    })
                 )
             }
             AnimatedVisibility(
-                visible = state.isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
+                visible = state.isNotEmpty(), enter = fadeIn(), exit = fadeOut()
             ) {
-                IconButton(
-                    onClick = {
-                        state = ""
-                        onValueChanged(state)
+                IconButton(onClick = {
+                    state = ""
+                    onValueChanged(state)
+
+                    if (!focused) {
+                        focusRequester.requestFocus()
                     }
-                ) {
+                }) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_close_24),
                         contentDescription = stringResource(R.string.content_description_clear_search)
