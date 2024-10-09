@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -28,11 +29,16 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -65,6 +71,9 @@ fun <State> StoreFrontScroller(
     val errorReceiving by viewModel.errorReceiving.collectAsState()
     val deviceHasNetwork by viewModel.deviceHasNetwork.collectAsState()
 
+    var searchQuery by remember { mutableStateOf("") }
+    var searchBarHeight by remember { mutableIntStateOf(0) }
+
     Box(Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxWidth(),
@@ -74,6 +83,10 @@ fun <State> StoreFrontScroller(
             contentPadding = PaddingValues(8.dp),
             state = lazyGridState
         ) {
+            item {
+                val height = with(LocalDensity.current) { searchBarHeight.toDp() }
+                Box(Modifier.height(height + 16.dp))
+            }
             items(
                 count = cards.size,
                 key = { index -> cards[index].hashCode() }
@@ -142,6 +155,15 @@ fun <State> StoreFrontScroller(
                 }
             }
         }
+
+        PillSearchField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .align(Alignment.TopCenter)
+                .onGloballyPositioned { searchBarHeight = it.size.height },
+            onValueChanged = { searchQuery = it }
+        )
 
         val isFabVisible by remember { derivedStateOf { lazyGridState.firstVisibleItemIndex } }
         AnimatedVisibility(

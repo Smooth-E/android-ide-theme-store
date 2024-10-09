@@ -16,4 +16,6 @@
     <string name="message_no_connection">It looks like you are not connected to any network. How are we supposed to deliver information?</string>
     <string name="content_description_publisher_verified">Verified publisher badge</string>
     <string name="content_description_scroll_to_top">Scroll to the top</string>
+    <string name="content_description_clear_search">Clear search query</string>
+    <string name="message_search_bar_placeholder">Search themes</string>
 </resources>
