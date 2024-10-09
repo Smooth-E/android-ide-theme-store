@@ -41,7 +41,11 @@ data class MicrosoftStoreRequestPayload(
          * @param pageNumber number of the desired page
          * @return the constructed payload
          */
-        fun construct(pageSize: Int, pageNumber: Int) = MicrosoftStoreRequestPayload(
+        fun construct(
+            pageSize: Int,
+            pageNumber: Int,
+            searchQuery: String
+        ) = MicrosoftStoreRequestPayload(
             assetTypes = listOf(
                 "Microsoft.VisualStudio.Services.Icons.Default",
                 "Microsoft.VisualStudio.Services.Icons.Branding",
@@ -66,7 +70,16 @@ data class MicrosoftStoreRequestPayload(
                             filterType = 5,
                             value = "Themes"
                         )
-                    ),
+                    ).let {
+                        if (searchQuery.isNotEmpty())
+                            it + listOf(
+                                Filter.FilterCriteria(
+                                    filterType = 10,
+                                    value = searchQuery
+                                )
+                            )
+                        it
+                    },
                     direction = 2,
                     pageSize = pageSize,
                     pageNumber = pageNumber,

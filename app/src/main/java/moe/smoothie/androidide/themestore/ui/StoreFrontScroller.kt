@@ -56,7 +56,6 @@ import moe.smoothie.androidide.themestore.viewmodels.StoreFrontViewModel
 fun <State> StoreFrontScroller(
     viewModel: StoreFrontViewModel<State>,
     cardComposable: @Composable (State) -> Unit,
-    itemsPerPage: Int,
     minSize: Dp = 300.dp
 ) {
     val tag = "StoreFrontScroller"
@@ -74,7 +73,6 @@ fun <State> StoreFrontScroller(
     val errorReceiving by viewModel.errorReceiving.collectAsState()
     val deviceHasNetwork by viewModel.deviceHasNetwork.collectAsState()
 
-    var searchQuery by remember { mutableStateOf("") }
     var searchBarHeight by remember { mutableIntStateOf(0) }
 
     Box(Modifier.fillMaxSize()) {
@@ -86,7 +84,7 @@ fun <State> StoreFrontScroller(
             contentPadding = PaddingValues(8.dp),
             state = lazyGridState
         ) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 val height = with(LocalDensity.current) { searchBarHeight.toDp() }
                 Box(Modifier.height(height + 16.dp))
             }
@@ -97,10 +95,10 @@ fun <State> StoreFrontScroller(
                 Box(Modifier.animateItem()) {
                     cardComposable(cards[index])
                 }
-                if (index == cards.size - itemsPerPage / 2) {
+                if (index == cards.size - viewModel.itemsPerPage / 2) {
                     SideEffect {
                         if (!isLoading) {
-                            viewModel.loadItems(context, itemsPerPage)
+                            viewModel.loadItems(context)
                         }
                     }
                 }
@@ -108,7 +106,7 @@ fun <State> StoreFrontScroller(
             if (cards.isEmpty()) {
                 item {
                     SideEffect {
-                        viewModel.loadItems(context, itemsPerPage)
+                        viewModel.loadItems(context)
                     }
                 }
             }
@@ -125,7 +123,6 @@ fun <State> StoreFrontScroller(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                itemsPerPage = itemsPerPage,
                                 coroutineScope = coroutineScope
                             )
                         } else if (errorReceiving) {
@@ -133,7 +130,6 @@ fun <State> StoreFrontScroller(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                itemsPerPage = itemsPerPage,
                                 coroutineScope = coroutineScope
                             )
                         } else if (errorParsingResponse) {
@@ -141,7 +137,6 @@ fun <State> StoreFrontScroller(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                itemsPerPage = itemsPerPage,
                                 coroutineScope = coroutineScope
                             )
                         }
@@ -150,7 +145,6 @@ fun <State> StoreFrontScroller(
                             modifier = modifier,
                             lazyGridState = lazyGridState,
                             viewModel = viewModel,
-                            itemsPerPage = itemsPerPage,
                             coroutineScope = coroutineScope,
                             cardsSize = cards.size
                         )
@@ -169,7 +163,7 @@ fun <State> StoreFrontScroller(
                     elevation = if (lazyGridState.isScrolled()) 3.dp else 0.dp,
                     shape = RoundedCornerShape(300.dp)
                 ),
-            onValueChanged = { searchQuery = it },
+            onValueChanged = { viewModel.setSearchQuery(it, context) },
         )
 
         val isFabVisible by remember { derivedStateOf { lazyGridState.firstVisibleItemIndex } }
@@ -202,7 +196,6 @@ internal fun <State> ReloadFooterCardButton(
     lazyGridState: LazyGridState,
     coroutineScope: CoroutineScope,
     viewModel: StoreFrontViewModel<State>,
-    itemsPerPage: Int
 ) {
     val context = LocalContext.current
 
@@ -211,7 +204,7 @@ internal fun <State> ReloadFooterCardButton(
         onClick = {
             coroutineScope.launch {
                 lazyGridState.animateScrollToItem(0)
-                viewModel.reload(context, itemsPerPage)
+                viewModel.reload(context)
             }
         }
     ) {
@@ -228,7 +221,6 @@ internal fun <State> FooterNoNetwork(
     modifier: Modifier,
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
-    itemsPerPage: Int,
     coroutineScope: CoroutineScope
 ) {
     FooterCard(
@@ -245,7 +237,6 @@ internal fun <State> FooterNoNetwork(
             ReloadFooterCardButton(
                 lazyGridState = lazyGridState,
                 viewModel = viewModel,
-                itemsPerPage = itemsPerPage,
                 coroutineScope = coroutineScope
             )
         }
@@ -257,7 +248,6 @@ internal fun <State> FooterErrorReceiving(
     modifier: Modifier,
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
-    itemsPerPage: Int,
     coroutineScope: CoroutineScope
 ) {
     FooterCard(
@@ -274,7 +264,6 @@ internal fun <State> FooterErrorReceiving(
             ReloadFooterCardButton(
                 lazyGridState = lazyGridState,
                 viewModel = viewModel,
-                itemsPerPage = itemsPerPage,
                 coroutineScope = coroutineScope
             )
         }
@@ -286,7 +275,6 @@ internal fun <State> FooterErrorParsingResponse(
     modifier: Modifier,
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
-    itemsPerPage: Int,
     coroutineScope: CoroutineScope
 ) {
     FooterCard(
@@ -303,7 +291,6 @@ internal fun <State> FooterErrorParsingResponse(
             ReloadFooterCardButton(
                 lazyGridState = lazyGridState,
                 viewModel = viewModel,
-                itemsPerPage = itemsPerPage,
                 coroutineScope = coroutineScope
             )
         }
@@ -315,7 +302,6 @@ internal fun <State> FooterListEnd(
     modifier: Modifier,
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
-    itemsPerPage: Int,
     coroutineScope: CoroutineScope,
     cardsSize: Int
 ) {
@@ -338,7 +324,6 @@ internal fun <State> FooterListEnd(
             ReloadFooterCardButton(
                 lazyGridState = lazyGridState,
                 viewModel = viewModel,
-                itemsPerPage = itemsPerPage,
                 coroutineScope = coroutineScope
             )
         }

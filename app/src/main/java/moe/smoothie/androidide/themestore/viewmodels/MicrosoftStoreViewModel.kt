@@ -2,13 +2,10 @@ package moe.smoothie.androidide.themestore.viewmodels
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -27,29 +24,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MicrosoftStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
-) : ViewModel(), StoreFrontViewModel<MicrosoftStoreCardState> {
+) : StoreFrontViewModel<MicrosoftStoreCardState>() {
+    override val itemsPerPage: Int = 10
+
     private val tag = "MicrosoftStoreViewModel"
 
-    private val mutableItems = MutableStateFlow<List<MicrosoftStoreCardState>>(emptyList())
-    override val items: StateFlow<List<MicrosoftStoreCardState>> = mutableItems
-
-    private val mutableIsLoading = MutableStateFlow(false)
-    override val isLoading: StateFlow<Boolean> = mutableIsLoading
-
-    private val mutableAllItemsLoaded = MutableStateFlow(false)
-    override val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
-
-    private val mutableErrorReceiving = MutableStateFlow(false)
-    override val errorReceiving: StateFlow<Boolean> = mutableErrorReceiving
-
-    private val mutableDeviceHasNetwork = MutableStateFlow(true)
-    override val deviceHasNetwork: StateFlow<Boolean> = mutableDeviceHasNetwork
-
-    private val mutableErrorParsingResponse = MutableStateFlow(false)
-    override val errorParsingResponse: StateFlow<Boolean> = mutableErrorParsingResponse
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun loadItems(context: Context, pageSize: Int) {
+    override fun loadItems(context: Context) {
         if (!hasNetwork(context)) {
             mutableDeviceHasNetwork.update { false }
             return
@@ -70,9 +51,12 @@ class MicrosoftStoreViewModel @Inject constructor(
 
             mutableIsLoading.update { true }
 
-            val pageNumber = 1 + items.value.size / pageSize
-            val payload =
-                Json.encodeToString(MicrosoftStoreRequestPayload.construct(pageSize, pageNumber))
+            val payload = Json.encodeToString(MicrosoftStoreRequestPayload.construct(
+                pageSize = itemsPerPage,
+                pageNumber = 1 + items.value.size / itemsPerPage,
+                searchQuery = searchQuery.value
+            ))
+
             val request = Request.Builder()
                 .url("https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery")
                 .addHeader("Content-Type", "application/json; charset=utf-8")
@@ -100,20 +84,20 @@ class MicrosoftStoreViewModel @Inject constructor(
                     }
 
                     mutableItems.update { list ->
-                        list + data!!.results.first().extensions.map {
+                        list + data!!.results.first().extensions.map { extension ->
                             MicrosoftStoreCardState(
-                                iconUrl = it.versions.first().files.find {
+                                iconUrl = extension.versions.first().files.find {
                                     it.assetType == "Microsoft.VisualStudio.Services.Icons.Default"
                                 }?.source ?: "",
-                                name = it.displayName,
-                                developerName = it.publisher.displayName,
-                                developerWebsite = it.publisher.domain,
-                                developerWebsiteVerified = it.publisher.isDomainVerified,
-                                downloads = it.statistics.find {
+                                name = extension.displayName,
+                                developerName = extension.publisher.displayName,
+                                developerWebsite = extension.publisher.domain,
+                                developerWebsiteVerified = extension.publisher.isDomainVerified,
+                                downloads = extension.statistics.find {
                                     it.statisticName == "downloadCount"
                                 }?.value.toString().toLongOrNull() ?: 0L,
-                                description = it.shortDescription,
-                                rating = it.statistics.find {
+                                description = extension.shortDescription,
+                                rating = extension.statistics.find {
                                     it.statisticName == "averagerating"
                                 }?.value.toString().toFloatOrNull() ?: 0f
                             )
@@ -129,9 +113,4 @@ class MicrosoftStoreViewModel @Inject constructor(
             mutableIsLoading.update { false }
         }
     }
-
-    override fun reload(context: Context, pageSize: Int) {
-        TODO("Not yet implemented")
-    }
-
 }

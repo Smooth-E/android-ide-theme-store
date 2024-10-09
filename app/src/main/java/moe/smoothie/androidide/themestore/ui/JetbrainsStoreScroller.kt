@@ -11,10 +11,7 @@ fun JetbrainsStoreScroller(
     backStackEntry: NavBackStackEntry,
     viewModel: JetbrainsStoreViewModel = hiltViewModel(backStackEntry)
 ) {
-    val itemsPerPage = 10
-
     StoreFrontScroller(
-        itemsPerPage = itemsPerPage,
         cardComposable = { state -> JetbrainsThemeCard(state) },
         viewModel = viewModel
     )

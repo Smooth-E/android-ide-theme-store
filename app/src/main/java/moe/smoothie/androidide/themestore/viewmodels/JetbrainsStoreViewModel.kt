@@ -23,30 +23,14 @@ import javax.inject.Inject
 @HiltViewModel
 class JetbrainsStoreViewModel @Inject constructor(
     private val httpClient: OkHttpClient
-) : ViewModel(), StoreFrontViewModel<JetbrainsThemeCardState> {
+) : StoreFrontViewModel<JetbrainsThemeCardState>() {
+    override val itemsPerPage: Int = 10
+
     private val tag = "JetbrainsStoreViewModel"
     private val basePreviewUrl = "https://downloads.marketplace.jetbrains.com"
 
-    private val mutableItems =  MutableStateFlow<List<JetbrainsThemeCardState>>(emptyList())
-    override val items: StateFlow<List<JetbrainsThemeCardState>> = mutableItems
-
-    private val mutableIsLoading = MutableStateFlow(false)
-    override val isLoading: StateFlow<Boolean> = mutableIsLoading
-
-    private val mutableAllItemsLoaded = MutableStateFlow(false)
-    override val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
-
-    private val mutableErrorReceiving = MutableStateFlow(false)
-    override val errorReceiving: StateFlow<Boolean> = mutableErrorReceiving
-
-    private val mutableDeviceHasNetwork = MutableStateFlow(false)
-    override val deviceHasNetwork: StateFlow<Boolean> = mutableDeviceHasNetwork
-
-    private val mutableErrorParsingResponse = MutableStateFlow(false)
-    override val errorParsingResponse: StateFlow<Boolean> = mutableErrorParsingResponse
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun loadItems(context: Context, pageSize: Int) {
+    override fun loadItems(context: Context) {
         mutableErrorReceiving.update { false }
         mutableErrorParsingResponse.update { false }
 
@@ -67,7 +51,7 @@ class JetbrainsStoreViewModel @Inject constructor(
             mutableIsLoading.update { true }
 
             val request = Request.Builder()
-                .url(getPageUrl(mutableItems.value.size, pageSize))
+                .url(getPageUrl(mutableItems.value.size, itemsPerPage))
                 .build()
 
             try {
@@ -103,12 +87,12 @@ class JetbrainsStoreViewModel @Inject constructor(
                         }
                     }
 
-                    if (data.total <= items.value.size || items.value.size > 0) {
+                    if (data.total <= items.value.size) {
                         mutableAllItemsLoaded.update { true }
                     }
                 }
             } catch (exception: Exception) {
-                val url = getPageUrl(items.value.size, pageSize)
+                val url = getPageUrl(items.value.size, itemsPerPage)
                 Log.e(tag, "Exception loading ne items for $url")
                 exception.printStackTrace()
                 mutableErrorReceiving.update { true }
@@ -118,12 +102,6 @@ class JetbrainsStoreViewModel @Inject constructor(
         }
     }
 
-    override fun reload(context: Context, pageSize: Int) {
-        mutableAllItemsLoaded.update { false }
-        mutableItems.update { emptyList() }
-        loadItems(context, pageSize)
-    }
-
     private fun getPageUrl(offset: Int, pageSize: Int) =
-        "https://plugins.jetbrains.com/api/searchPlugins?excludeTags=internal&includeTags=theme&max=${pageSize}&offset=${offset}&tags=Theme"
+        "https://plugins.jetbrains.com/api/searchPlugins?excludeTags=internal&includeTags=theme&max=${pageSize}&offset=${offset}&tags=Theme&search=${searchQuery.value}"
 }

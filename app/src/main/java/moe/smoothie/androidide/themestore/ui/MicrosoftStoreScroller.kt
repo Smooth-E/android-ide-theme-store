@@ -11,12 +11,9 @@ fun MicrosoftStoreScroller(
     backStackEntry: NavBackStackEntry,
     viewModel: MicrosoftStoreViewModel = hiltViewModel(backStackEntry)
 ) {
-    val itemsPerPage = 10
-
     StoreFrontScroller(
         viewModel = viewModel,
         cardComposable = { MicrosoftStoreCard(it) },
-        itemsPerPage = itemsPerPage,
         minSize = 150.dp
     )
 }
