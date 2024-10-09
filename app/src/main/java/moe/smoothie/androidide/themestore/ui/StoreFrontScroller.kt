@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -36,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import moe.smoothie.androidide.themestore.R
+import moe.smoothie.androidide.themestore.util.isScrolled
 import moe.smoothie.androidide.themestore.viewmodels.StoreFrontViewModel
 
 @Composable
@@ -161,8 +164,12 @@ fun <State> StoreFrontScroller(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .align(Alignment.TopCenter)
-                .onGloballyPositioned { searchBarHeight = it.size.height },
-            onValueChanged = { searchQuery = it }
+                .onGloballyPositioned { searchBarHeight = it.size.height }
+                .shadow(
+                    elevation = if (lazyGridState.isScrolled()) 3.dp else 0.dp,
+                    shape = RoundedCornerShape(300.dp)
+                ),
+            onValueChanged = { searchQuery = it },
         )
 
         val isFabVisible by remember { derivedStateOf { lazyGridState.firstVisibleItemIndex } }
