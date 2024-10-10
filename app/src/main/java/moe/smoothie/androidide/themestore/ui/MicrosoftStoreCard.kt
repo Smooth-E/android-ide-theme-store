@@ -79,46 +79,13 @@ fun MicrosoftStoreCard(state: MicrosoftStoreCardState) {
                     contentDescription = null,
                     contentScale = ContentScale.Fit
                 )
-
-                var boxWidth by remember { mutableStateOf(0) }
-                var textWidth by remember { mutableStateOf(0) }
-
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { boxWidth = it.size.width }
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .basicMarquee()
-                            .onGloballyPositioned { textWidth = it.size.width },
-                        text = state.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                    )
-
-                    if (boxWidth < textWidth) {
-                        Box(
-                            Modifier
-                                .matchParentSize()
-                                .graphicsLayer { clip = true }
-                                .background(
-                                    Brush.horizontalGradient(
-                                        listOf(
-                                            MaterialTheme.colorScheme.surface,
-                                            androidx.compose.ui.graphics.Color.Transparent,
-                                            androidx.compose.ui.graphics.Color.Transparent,
-                                            androidx.compose.ui.graphics.Color.Transparent,
-                                            androidx.compose.ui.graphics.Color.Transparent,
-                                            MaterialTheme.colorScheme.surface,
-                                        )
-                                    )
-                                )
-                        )
-                    }
-                }
+                FadingEdgeMarqueeText(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = state.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center
+                )
             }
 
             val textStyle = MaterialTheme.typography.bodySmall
@@ -158,21 +125,10 @@ fun MicrosoftStoreCard(state: MicrosoftStoreCardState) {
                 }
             }
 
-            Row {
-                for (i in 1..5) {
-                    val painter =
-                        if (i <= state.rating)
-                            painterResource(R.drawable.baseline_grade_24)
-                        else painterResource(
-                            R.drawable.outline_grade_24
-                        )
-                    Icon(
-                        painter = painter,
-                        contentDescription = null,
-                        modifier = Modifier.size(lineHeightDp)
-                    )
-                }
-            }
+            RatingRow(
+                modifier = Modifier.height(lineHeightDp),
+                rating = state.rating
+            )
 
             Row(modifier = Modifier.height(lineHeightDp)) {
                 Icon(
