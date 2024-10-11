@@ -1,7 +1,6 @@
 package moe.smoothie.androidide.themestore.ui
 
-import androidx.collection.mutableIntIntMapOf
-import androidx.compose.animation.AnimatedVisibility
+import android.animation.ArgbEvaluator
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,30 +26,31 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.SubcomposeAsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
 import moe.smoothie.androidide.themestore.util.formatNumber
+import moe.smoothie.androidide.themestore.util.toDp
+import moe.smoothie.androidide.themestore.util.toPx
 
 data class ThemeAppBarState(
     val iconUrl: String,
@@ -80,36 +77,42 @@ fun ThemeAppBar(
     val developerTextStyle = MaterialTheme.typography.bodyMedium
     val spacing = 8.dp
 
-    val expandedHeightPx = with(LocalDensity.current) {
+    val expandedHeightPx =
         headerTextStyle.lineHeight.toPx() +
                 downloadsTextStyle.lineHeight.toPx() +
                 descriptionTextStyle.lineHeight.toPx() +
                 developerTextStyle.lineHeight.toPx() +
                 spacing.toPx() * 5
-    }
 
-    val expandedHeightDp = with(LocalDensity.current) { expandedHeightPx.toDp() }
+    val expandedHeightDp = expandedHeightPx.toDp()
+    val collapsedHeightPx = TopAppBarDefaults.MediumAppBarCollapsedHeight.toPx()
+    val collapsedHeightDp = collapsedHeightPx.toDp()
 
-    val collapsedHeightPx = with(LocalDensity.current) {
-        TopAppBarDefaults.MediumAppBarCollapsedHeight.toPx()
-    }
+    val actualHeightPx = (expandedHeightPx - scrollOffset)
+        .coerceIn(collapsedHeightPx, expandedHeightPx)
 
-    val collapsedHeightDp = with(LocalDensity.current) { collapsedHeightPx.toDp() }
+    val actualHeightDp = actualHeightPx.toDp()
 
-    val actualHeightPx =
-        (expandedHeightPx - scrollOffset).coerceIn(collapsedHeightPx, expandedHeightPx)
+    val progress = (actualHeightPx - collapsedHeightPx) / (expandedHeightPx - collapsedHeightPx)
 
-    val actualHeightDp = with(LocalDensity.current) { actualHeightPx.toDp() }
+    val backgroundColor = Color(
+        ArgbEvaluator().evaluate(
+            progress,
+            MaterialTheme.colorScheme.surfaceContainer.toArgb(),
+            MaterialTheme.colorScheme.surface.toArgb()
+        ) as Int
+    )
 
-    val progress = actualHeightPx / expandedHeightPx - collapsedHeightPx / expandedHeightPx
-
-    Box(Modifier.background(color = MaterialTheme.colorScheme.surfaceContainer)) {
+    Box(
+        modifier = Modifier
+            .background(color = backgroundColor)
+            .clip(RectangleShape)
+    ) {
         Box(
             modifier = Modifier
                 .statusBarsPadding()
                 .fillMaxWidth()
-                .height(actualHeightDp)
-                .background(color = MaterialTheme.colorScheme.surfaceContainer),
+                .height(actualHeightDp),
         ) {
             Row(
                 modifier = Modifier
@@ -118,7 +121,7 @@ fun ThemeAppBar(
                     .requiredHeight(expandedHeightDp),
                 horizontalArrangement = Arrangement.spacedBy(spacing)
             ) {
-                val iconSize = lerp(collapsedHeightDp, expandedHeightDp, progress) - 16.dp
+                val iconSize = lerp(collapsedHeightDp, expandedHeightDp, progress) - spacing * 2
 
                 SubcomposeAsyncImage(
                     modifier = Modifier
@@ -126,69 +129,51 @@ fun ThemeAppBar(
                         .offset(0.dp, (actualHeightDp - iconSize) / 2)
                         .clip(CircleShape),
                     contentDescription = null,
-                    model = state.iconUrl,
+                    model = if (state.iconUrl.lowercase().endsWith(".svg"))
+                        ImageRequest.Builder(LocalContext.current)
+                            .data(state.iconUrl)
+                            .decoderFactory(SvgDecoder.Factory())
+                            .build()
+                    else
+                        state.iconUrl,
                     contentScale = ContentScale.Fit
                 )
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(spacing)
                 ) {
-                    val headerLineHeightDp = with(LocalDensity.current) {
-                        headerTextStyle.lineHeight.toDp()
-                    }
-
-                    val headerVerticalOffset = with(LocalDensity.current) {
-                        val headerLineHeightPx = headerTextStyle.lineHeight.toPx()
-                        ((1f - progress) / 2f * (collapsedHeightPx - headerLineHeightPx)).toInt()
-                    }
-
-                    val installButtonWidthDp =
-                        with(LocalDensity.current) { installButtonWidth.toDp() }
-
-                    Box {
-                        FadingEdgeMarqueeText(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(lerp(collapsedHeightDp, headerLineHeightDp, progress))
-                                .padding(PaddingValues(end = installButtonWidthDp + spacing))
-                                .offset { IntOffset(0, headerVerticalOffset) },
-                            text = state.themeName,
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            gradientColors = listOf(
-                                MaterialTheme.colorScheme.surfaceContainer,
-                                Color.Transparent,
-                                Color.Transparent,
-                                Color.Transparent,
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.surfaceContainer
+                    val headerVerticalOffset =
+                        ((1f - progress) / 2f * (collapsedHeightPx - headerTextStyle.lineHeight.toPx()))
+                    FadingEdgeMarqueeText(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(
+                                lerp(
+                                    collapsedHeightDp,
+                                    headerTextStyle.lineHeight.toDp(),
+                                    progress
+                                )
                             )
+                            .padding(
+                                PaddingValues(
+                                    end = installButtonWidth.toDp() * (1f - progress) + spacing
+                                )
+                            )
+                            .offset(0.dp, headerVerticalOffset.toDp()),
+                        text = state.themeName,
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        gradientColors = listOf(
+                            backgroundColor,
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.Transparent,
+                            backgroundColor
                         )
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                        ) {
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = progress == 0f,
-                                enter = fadeIn(),
-                                exit = fadeOut()
-                            ) {
-                                Button(
-                                    modifier = Modifier
-                                        .onGloballyPositioned {
-                                            installButtonWidth = it.size.width
-                                        },
-                                    onClick = { }
-                                ) {
-                                    Text("Install")
-                                }
-                            }
-                        }
-                    }
+                    )
 
-                    val downloadCounterHeight = with(LocalDensity.current) {
-                        downloadsTextStyle.lineHeight.toDp()
-                    }
+                    val downloadCounterHeight = downloadsTextStyle.lineHeight.toDp()
 
                     Row(
                         modifier = Modifier
@@ -216,13 +201,45 @@ fun ThemeAppBar(
                     }
                 }
             }
+            Row(
+                modifier = Modifier
+                    .height(collapsedHeightDp)
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = progress == 0f,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .onGloballyPositioned {
+                                installButtonWidth = it.size.width
+                            },
+                        onClick = { },
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(18.dp),
+                                painter = painterResource(R.drawable.phosphor_download_simple),
+                                contentDescription = null
+                            )
+                            Text("Install")
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 private val mockState = ThemeAppBarState(
     iconUrl = "https://example.com",
-    themeName =  "Mtaerial Icons Theme, but it has a longer name",
+    themeName = "Mtaerial Icons Theme, but it has a longer name",
     rating = 3.5f,
     downloads = 3_456_789,
     author = "John Doe",
