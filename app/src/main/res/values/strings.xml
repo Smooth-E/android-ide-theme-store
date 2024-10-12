@@ -18,4 +18,6 @@
     <string name="content_description_scroll_to_top">Scroll to the top</string>
     <string name="content_description_clear_search">Clear search query</string>
     <string name="message_search_bar_placeholder">Search themes</string>
+    <string name="content_description_go_back">Go back</string>
+    <string name="action_download_theme">Download theme</string>
 </resources>
