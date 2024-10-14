@@ -77,7 +77,7 @@ fun <State> StoreFrontScroller(
             state = lazyGridState
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(Modifier.height(pillSearchFieldHeight() + 16.dp * 2))
+                Box(Modifier.height(pillSearchFieldHeight() + 16.dp * 25))
             }
             items(
                 count = cards.size,
