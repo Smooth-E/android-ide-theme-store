@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string translatable="false" name="source_jetbrains">JetBrains</string>
+    <string translatable="false" name="source_vscode">VSCode</string>
+    <string translatable="false" name="store_name_jetbrains">JetBrains Marketplace</string>
+    <string translatable="false" name="store_name_microsoft">Microsoft Store</string>
+</resources>

@@ -1,5 +1,6 @@
 package moe.smoothie.androidide.themestore.ui
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -21,7 +22,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,7 +32,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -119,25 +119,31 @@ fun <State> StoreFrontScroller(
 
                     if (!allItemsLoaded) {
                         if (!deviceHasNetwork) {
-                            FooterNoNetwork(
+                            LoadingFooterCard(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                coroutineScope = coroutineScope
+                                coroutineScope = coroutineScope,
+                                context = LocalContext.current,
+                                loadingStatus = LoadingStatus.NO_NETWORK
                             )
                         } else if (errorReceiving) {
-                            FooterErrorReceiving(
+                            LoadingFooterCard(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                coroutineScope = coroutineScope
+                                coroutineScope = coroutineScope,
+                                context = LocalContext.current,
+                                loadingStatus = LoadingStatus.ERROR_RECEIVING
                             )
                         } else if (errorParsingResponse) {
-                            FooterErrorParsingResponse(
+                            LoadingFooterCard(
                                 modifier = modifier,
                                 lazyGridState = lazyGridState,
                                 viewModel = viewModel,
-                                coroutineScope = coroutineScope
+                                coroutineScope = coroutineScope,
+                                context = LocalContext.current,
+                                loadingStatus = LoadingStatus.ERROR_PARSING
                             )
                         }
                     } else {
@@ -146,7 +152,8 @@ fun <State> StoreFrontScroller(
                             lazyGridState = lazyGridState,
                             viewModel = viewModel,
                             coroutineScope = coroutineScope,
-                            cardsSize = cards.size
+                            cardsSize = cards.size,
+                            context = LocalContext.current
                         )
                     }
                 }
@@ -191,110 +198,34 @@ fun <State> StoreFrontScroller(
     }
 }
 
-@Composable
-internal fun <State> ReloadFooterCardButton(
-    lazyGridState: LazyGridState,
+private fun <State> reloadCallback(
     coroutineScope: CoroutineScope,
+    lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
+    context: Context
 ) {
-    val context = LocalContext.current
-
-    FilledTonalButton(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = {
-            coroutineScope.launch {
-                lazyGridState.animateScrollToItem(0)
-                viewModel.reload(context)
-            }
-        }
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.baseline_refresh_24),
-            contentDescription = null
-        )
-        Text(stringResource(R.string.button_reload))
+    coroutineScope.launch {
+        lazyGridState.animateScrollToItem(0)
+        viewModel.reload(context)
     }
 }
 
 @Composable
-internal fun <State> FooterNoNetwork(
+internal fun <State> LoadingFooterCard(
     modifier: Modifier,
+    loadingStatus: LoadingStatus,
+    context: Context,
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
     coroutineScope: CoroutineScope
 ) {
-    FooterCard(
-        modifier = modifier,
-        hero = {
-            Icon(
-                painter = painterResource(R.drawable.round_signal_wifi_off_24),
-                contentDescription = null
-            )
-        },
-        header = { Text(stringResource(R.string.header_no_connection)) },
-        message = { Text(stringResource(R.string.message_no_connection)) },
-        button = {
-            ReloadFooterCardButton(
-                lazyGridState = lazyGridState,
-                viewModel = viewModel,
-                coroutineScope = coroutineScope
-            )
-        }
-    )
-}
-
-@Composable
-internal fun <State> FooterErrorReceiving(
-    modifier: Modifier,
-    lazyGridState: LazyGridState,
-    viewModel: StoreFrontViewModel<State>,
-    coroutineScope: CoroutineScope
-) {
-    FooterCard(
-        modifier = modifier,
-        hero = {
-            Icon(
-                painter = painterResource(R.drawable.round_data_object_24),
-                contentDescription = null
-            )
-        },
-        header = { Text(stringResource(R.string.header_failure_receiving)) },
-        message = { Text(stringResource(R.string.message_failure_receiving)) },
-        button = {
-            ReloadFooterCardButton(
-                lazyGridState = lazyGridState,
-                viewModel = viewModel,
-                coroutineScope = coroutineScope
-            )
-        }
-    )
-}
-
-@Composable
-internal fun <State> FooterErrorParsingResponse(
-    modifier: Modifier,
-    lazyGridState: LazyGridState,
-    viewModel: StoreFrontViewModel<State>,
-    coroutineScope: CoroutineScope
-) {
-    FooterCard(
-        modifier = modifier,
-        hero = {
-            Icon(
-                painter = painterResource(R.drawable.round_translate_24),
-                contentDescription = null
-            )
-        },
-        header = { Text(stringResource(R.string.header_unexpected_response)) },
-        message = { Text(stringResource(R.string.message_unexpected_response)) },
-        button = {
-            ReloadFooterCardButton(
-                lazyGridState = lazyGridState,
-                viewModel = viewModel,
-                coroutineScope = coroutineScope
-            )
-        }
-    )
+    ElevatedCard {
+        StatusView(
+            modifier = modifier,
+            loadingStatus = loadingStatus,
+            reloadCallback = { reloadCallback(coroutineScope, lazyGridState, viewModel, context) }
+        )
+    }
 }
 
 @Composable
@@ -303,29 +234,26 @@ internal fun <State> FooterListEnd(
     lazyGridState: LazyGridState,
     viewModel: StoreFrontViewModel<State>,
     coroutineScope: CoroutineScope,
+    context: Context,
     cardsSize: Int
 ) {
-    FooterCard(
-        modifier = modifier,
-        hero = {
-            Icon(
-                painter = painterResource(R.drawable.round_auto_awesome_24),
-                contentDescription = null
-            )
-        },
-        header = { Text(stringResource(R.string.header_all_loaded)) },
-        message = {
-            Text(
-                stringResource(R.string.description_all_loaded)
-                    .format(cardsSize)
-            )
-        },
-        button = {
-            ReloadFooterCardButton(
-                lazyGridState = lazyGridState,
-                viewModel = viewModel,
-                coroutineScope = coroutineScope
-            )
-        }
-    )
+    ElevatedCard {
+        StatusView(
+            modifier = modifier,
+            hero = {
+                Icon(
+                    painter = painterResource(R.drawable.round_auto_awesome_24),
+                    contentDescription = null
+                )
+            },
+            header = { Text(stringResource(R.string.header_all_loaded)) },
+            description = {
+                Text(
+                    stringResource(R.string.description_all_loaded)
+                        .format(cardsSize)
+                )
+            },
+            reloadCallback = { reloadCallback(coroutineScope, lazyGridState, viewModel, context) }
+        )
+    }
 }
