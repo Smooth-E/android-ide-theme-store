@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import moe.smoothie.androidide.themestore.ui.LoadingStatus
 
 abstract class StoreFrontViewModel<T> : ViewModel() {
     abstract val itemsPerPage: Int
@@ -19,14 +20,8 @@ abstract class StoreFrontViewModel<T> : ViewModel() {
     protected val mutableAllItemsLoaded = MutableStateFlow(false)
     val allItemsLoaded: StateFlow<Boolean> = mutableAllItemsLoaded
 
-    protected val mutableErrorReceiving = MutableStateFlow(false)
-    val errorReceiving: StateFlow<Boolean> = mutableErrorReceiving
-
-    protected val mutableDeviceHasNetwork = MutableStateFlow(false)
-    val deviceHasNetwork: StateFlow<Boolean> = mutableDeviceHasNetwork
-
-    protected val mutableErrorParsingResponse = MutableStateFlow(false)
-    val errorParsingResponse: StateFlow<Boolean> = mutableErrorParsingResponse
+    protected val mutableLoadingStatus = MutableStateFlow(LoadingStatus.LOADING)
+    val loadingStatus: StateFlow<LoadingStatus> = mutableLoadingStatus
 
     protected val mutableSearchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = mutableSearchQuery

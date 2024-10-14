@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.MicrosoftStoreRequestPayload
 import moe.smoothie.androidide.themestore.data.MicrosoftStoreResponse
+import moe.smoothie.androidide.themestore.ui.LoadingStatus
 import moe.smoothie.androidide.themestore.ui.MicrosoftStoreCardState
 import moe.smoothie.androidide.themestore.util.hasNetwork
 import okhttp3.MediaType.Companion.toMediaType
@@ -32,13 +33,11 @@ class MicrosoftStoreViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun loadItems(context: Context) {
         if (!hasNetwork(context)) {
-            mutableDeviceHasNetwork.update { false }
+            mutableLoadingStatus.update { LoadingStatus.NO_NETWORK }
             return
         }
 
-        mutableDeviceHasNetwork.update { true }
-        mutableErrorReceiving.update { false }
-        mutableErrorParsingResponse.update { false }
+        mutableLoadingStatus.update { LoadingStatus.LOADING }
 
         viewModelScope.launch(Dispatchers.IO) {
             if (mutableAllItemsLoaded.value) {
@@ -67,7 +66,7 @@ class MicrosoftStoreViewModel @Inject constructor(
                 httpClient.newCall(request).executeAsync().use { response ->
                     if (!response.isSuccessful) {
                         Log.e(tag, "Request failed ${response.code}\n${response.body}")
-                        mutableErrorReceiving.update { true }
+                        mutableLoadingStatus.update { LoadingStatus.ERROR_RECEIVING }
                         return@use
                     }
 
@@ -79,7 +78,7 @@ class MicrosoftStoreViewModel @Inject constructor(
                     } catch (exception: Exception) {
                         Log.d(tag, "Failed to serialize the response")
                         exception.printStackTrace()
-                        mutableErrorParsingResponse.update { true }
+                        mutableLoadingStatus.update { LoadingStatus.ERROR_PARSING }
                         return@use
                     }
 
@@ -107,7 +106,7 @@ class MicrosoftStoreViewModel @Inject constructor(
             } catch (exception: Exception) {
                 Log.e(tag, "Error parsing or receiving the response")
                 exception.printStackTrace()
-                mutableErrorReceiving.update { true }
+                mutableLoadingStatus.update { LoadingStatus.ERROR_RECEIVING }
             }
 
             mutableIsLoading.update { false }

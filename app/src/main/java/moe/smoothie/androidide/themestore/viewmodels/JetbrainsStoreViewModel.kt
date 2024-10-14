@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import moe.smoothie.androidide.themestore.data.JetbrainsStorefrontResponse
 import moe.smoothie.androidide.themestore.ui.JetbrainsThemeCardState
+import moe.smoothie.androidide.themestore.ui.LoadingStatus
 import moe.smoothie.androidide.themestore.util.hasNetwork
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -31,13 +32,12 @@ class JetbrainsStoreViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun loadItems(context: Context) {
-        mutableErrorReceiving.update { false }
-        mutableErrorParsingResponse.update { false }
-
-        mutableDeviceHasNetwork.update { hasNetwork(context) }
-        if (!deviceHasNetwork.value) {
+        if (!hasNetwork(context)) {
+            mutableLoadingStatus.update { LoadingStatus.NO_NETWORK }
             return
         }
+
+        mutableLoadingStatus.update { LoadingStatus.LOADING }
 
         viewModelScope.launch(Dispatchers.IO) {
             if (mutableAllItemsLoaded.value) {
@@ -58,7 +58,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                 httpClient.newCall(request).executeAsync().use { response ->
                     if (!response.isSuccessful) {
                         Log.d(tag, "Request was not successful.\nUrl: ${request.url}")
-                        mutableErrorReceiving.update { true }
+                        mutableLoadingStatus.update { LoadingStatus.ERROR_RECEIVING }
                         return@use
                     }
 
@@ -71,7 +71,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                         Log.e(tag, "Error serializing the response")
                         Log.e(tag, "Response body:\n${responseBody.split(",").joinToString("\n")}")
                         Log.e(tag, exception.stackTraceToString())
-                        mutableErrorParsingResponse.update { true }
+                        mutableLoadingStatus.update { LoadingStatus.ERROR_PARSING }
                         return@use
                     }
 
@@ -95,7 +95,7 @@ class JetbrainsStoreViewModel @Inject constructor(
                 val url = getPageUrl(items.value.size, itemsPerPage)
                 Log.e(tag, "Exception loading ne items for $url")
                 exception.printStackTrace()
-                mutableErrorReceiving.update { true }
+                mutableLoadingStatus.update { LoadingStatus.ERROR_RECEIVING }
             }
 
             mutableIsLoading.update { false }

@@ -69,9 +69,7 @@ fun <State> StoreFrontScroller(
 
     val isLoading by viewModel.isLoading.collectAsState()
     val allItemsLoaded by viewModel.allItemsLoaded.collectAsState()
-    val errorParsingResponse by viewModel.errorParsingResponse.collectAsState()
-    val errorReceiving by viewModel.errorReceiving.collectAsState()
-    val deviceHasNetwork by viewModel.deviceHasNetwork.collectAsState()
+    val loadingStatus by viewModel.loadingStatus.collectAsState()
 
     var searchBarHeight by remember { mutableIntStateOf(0) }
 
@@ -118,34 +116,14 @@ fun <State> StoreFrontScroller(
                     val modifier = Modifier.width(min(450.dp, maxWidth))
 
                     if (!allItemsLoaded) {
-                        if (!deviceHasNetwork) {
-                            LoadingFooterCard(
-                                modifier = modifier,
-                                lazyGridState = lazyGridState,
-                                viewModel = viewModel,
-                                coroutineScope = coroutineScope,
-                                context = LocalContext.current,
-                                loadingStatus = LoadingStatus.NO_NETWORK
-                            )
-                        } else if (errorReceiving) {
-                            LoadingFooterCard(
-                                modifier = modifier,
-                                lazyGridState = lazyGridState,
-                                viewModel = viewModel,
-                                coroutineScope = coroutineScope,
-                                context = LocalContext.current,
-                                loadingStatus = LoadingStatus.ERROR_RECEIVING
-                            )
-                        } else if (errorParsingResponse) {
-                            LoadingFooterCard(
-                                modifier = modifier,
-                                lazyGridState = lazyGridState,
-                                viewModel = viewModel,
-                                coroutineScope = coroutineScope,
-                                context = LocalContext.current,
-                                loadingStatus = LoadingStatus.ERROR_PARSING
-                            )
-                        }
+                        LoadingFooterCard(
+                            modifier = modifier,
+                            lazyGridState = lazyGridState,
+                            viewModel = viewModel,
+                            coroutineScope = coroutineScope,
+                            context = LocalContext.current,
+                            loadingStatus = loadingStatus
+                        )
                     } else {
                         FooterListEnd(
                             modifier = modifier,
