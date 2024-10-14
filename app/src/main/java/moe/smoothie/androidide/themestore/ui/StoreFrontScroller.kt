@@ -31,16 +31,12 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -71,8 +67,6 @@ fun <State> StoreFrontScroller(
     val allItemsLoaded by viewModel.allItemsLoaded.collectAsState()
     val loadingStatus by viewModel.loadingStatus.collectAsState()
 
-    var searchBarHeight by remember { mutableIntStateOf(0) }
-
     Box(Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxWidth(),
@@ -83,8 +77,7 @@ fun <State> StoreFrontScroller(
             state = lazyGridState
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                val height = with(LocalDensity.current) { searchBarHeight.toDp() }
-                Box(Modifier.height(height + 16.dp))
+                Box(Modifier.height(pillSearchFieldHeight() + 16.dp * 2))
             }
             items(
                 count = cards.size,
@@ -143,7 +136,6 @@ fun <State> StoreFrontScroller(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .align(Alignment.TopCenter)
-                .onGloballyPositioned { searchBarHeight = it.size.height }
                 .shadow(
                     elevation = if (lazyGridState.isScrolled()) 3.dp else 0.dp,
                     shape = RoundedCornerShape(300.dp)

@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,8 +32,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,8 +39,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import moe.smoothie.androidide.themestore.R
 import moe.smoothie.androidide.themestore.ui.theme.AndroidIDEThemesTheme
+import moe.smoothie.androidide.themestore.util.toDp
+
+private val iconButtonSize = 40.dp
+
+@Composable
+fun pillSearchFieldHeight() = max(pillSearchFieldTextStyle().lineHeight.toDp(), iconButtonSize)
 
 @Composable
 fun PillSearchField(
@@ -52,7 +56,7 @@ fun PillSearchField(
     elevation: Dp = 0.dp,
     initialQuery: String = ""
 ) {
-    val tag = "PillSearchField"
+    val tag = "PillSearchFieldSearchField"
 
     var state by remember { mutableStateOf(initialQuery) }
     var focused by remember { mutableStateOf(false) }
@@ -67,12 +71,7 @@ fun PillSearchField(
                 shape = RoundedCornerShape(200.dp)
             )
     ) {
-        var rowHeight by remember { mutableIntStateOf(0) }
-
-        Row(
-            modifier = Modifier.onGloballyPositioned { rowHeight = it.size.height },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 modifier = Modifier
                     .padding(16.dp)
@@ -80,9 +79,6 @@ fun PillSearchField(
                 painter = painterResource(R.drawable.baseline_search_24),
                 contentDescription = null
             )
-
-            val textStyle = MaterialTheme.typography.bodyMedium
-            val height = with(LocalDensity.current) { rowHeight.toDp() }
 
             Box(Modifier.weight(1f)) {
                 androidx.compose.animation.AnimatedVisibility(
@@ -92,20 +88,22 @@ fun PillSearchField(
                         stringResource(R.string.message_search_bar_placeholder),
                         maxLines = 1,
                         modifier = Modifier
-                            .height(height)
+                            .height(pillSearchFieldHeight())
                             .wrapContentHeight()
                             .fillMaxWidth(),
-                        style = textStyle.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        style = pillSearchFieldTextStyle()
+                            .copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
-                BasicTextField(value = state,
+                BasicTextField(
+                    value = state,
                     onValueChange = {
                         state = it
                         onValueChanged(it)
                     },
                     maxLines = 1,
                     modifier = Modifier
-                        .height(height)
+                        .height(pillSearchFieldHeight())
                         .wrapContentHeight()
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
@@ -113,7 +111,7 @@ fun PillSearchField(
                             focused = it.isFocused
                             Log.d(tag, "Focus changed: $it")
                         },
-                    textStyle = textStyle,
+                    textStyle = pillSearchFieldTextStyle(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Search, autoCorrectEnabled = false
                     ),
@@ -144,9 +142,12 @@ fun PillSearchField(
     }
 }
 
+@Composable
+private fun pillSearchFieldTextStyle() = MaterialTheme.typography.bodyMedium
+
 @Preview
 @Composable
-internal fun PillSearchBarPreview() {
+private fun PillSearchBarPreview() {
     AndroidIDEThemesTheme {
         PillSearchField(
             modifier = Modifier.width(300.dp)
@@ -156,7 +157,7 @@ internal fun PillSearchBarPreview() {
 
 @Preview
 @Composable
-internal fun PillSearchBarWithQueryPreview() {
+private fun PillSearchBarWithQueryPreview() {
     AndroidIDEThemesTheme {
         PillSearchField(
             modifier = Modifier.width(300.dp),
